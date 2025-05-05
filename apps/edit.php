@@ -1,128 +1,143 @@
 <?php
-if ($_SERVER["REQUEST_METHOD"] == "POST" and isset($_POST['name'])) {
-    $db = new PDO('sqlite:../db.sqlite');
+require_once '../includes/auth.php'; // Use centralized auth
+
+$error_message = null;
+$app_to_edit = null;
+
+// Handle form submission for saving changes
+if ($auth && $_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['save_app'])) { // Check for specific save button
     $id = $_POST['id'];
-    $name = $_POST['name'];
+    $containerName = $_POST['containerName']; // Use containerName
     $image = $_POST['image'];
     $version = $_POST['version'];
-    $link = $_POST['link'];
-    $comments = $_POST['comments'];
-    $stmt = $db->prepare('UPDATE apps SET Name = :Name, Image = :Image, Version = :Version, Url = :Url, Comment = :Comment WHERE ID = :ID');
-    $stmt->bindParam(':Name', $name, PDO::PARAM_STR);
-    $stmt->bindParam(':Image', $image, PDO::PARAM_STR);
-    $stmt->bindParam(':Version', $version, PDO::PARAM_STR);
-    $stmt->bindParam(':Url', $link, PDO::PARAM_STR);
-    $stmt->bindParam(':Comment', $comments, PDO::PARAM_STR);
-    $stmt->bindParam(':ID', $id, PDO::PARAM_INT);
-    $stmt->execute();
-    header('Location: ../apps.php');
-}
-session_start();
-$db = new PDO('sqlite:../db.sqlite');
-$username = $_SESSION['username'];
-$password = $_SESSION['password'];
-if (isset($_SESSION['username']) and isset($_SESSION['password'])) {
-    $stmt = $db->prepare('SELECT * FROM users WHERE username = :username');
-    $stmt->bindParam(':username', $username, PDO::PARAM_STR);
-    $stmt->execute();
-    if ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        if (password_verify($password, $row['password'])) {
-            $auth = true;
-        } else {
-            $auth = false;
+    $url = $_POST['url']; // Use url
+    $comment = $_POST['comment']; // Use comment
+
+    try {
+        $stmt = $db->prepare('UPDATE apps SET ContainerName = :ContainerName, Image = :Image, Version = :Version, Url = :Url, Comment = :Comment WHERE ID = :ID');
+        $stmt->bindParam(':ContainerName', $containerName, PDO::PARAM_STR);
+        $stmt->bindParam(':Image', $image, PDO::PARAM_STR);
+        $stmt->bindParam(':Version', $version, PDO::PARAM_STR);
+        $stmt->bindParam(':Url', $url, PDO::PARAM_STR);
+        $stmt->bindParam(':Comment', $comment, PDO::PARAM_STR);
+        $stmt->bindParam(':ID', $id, PDO::PARAM_INT);
+        $stmt->execute();
+        header('Location: ../apps.php?updated=success'); // Redirect on success
+        exit;
+    } catch (PDOException $e) {
+        // Log error: error_log("App Update DB Error: " . $e->getMessage());
+        $error_message = "Failed to update app due to a database error.";
+        // Re-fetch app data to display form again with error
+        try {
+            $stmt = $db->prepare('SELECT * FROM apps WHERE ID = :ID');
+            $stmt->bindParam(':ID', $id, PDO::PARAM_INT);
+            $stmt->execute();
+            $app_to_edit = $stmt->fetch(PDO::FETCH_ASSOC);
+        } catch (PDOException $inner_e) {
+             $error_message = "Failed to update app and could not reload data.";
         }
-    } else {
-        $auth = false;
     }
-} else {
-    $auth = false;
+}
+
+// Handle form submission for selecting an app to edit
+if ($auth && $_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['edit_app'])) { // Check for specific edit button
+    $id = $_POST['id'];
+    try {
+        $stmt = $db->prepare('SELECT * FROM apps WHERE ID = :ID');
+        $stmt->bindParam(':ID', $id, PDO::PARAM_INT);
+        $stmt->execute();
+        $app_to_edit = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$app_to_edit) {
+            $error_message = "Selected app not found.";
+        }
+    } catch (PDOException $e) {
+        // Log error: error_log("App Edit Select DB Error: " . $e->getMessage());
+        $error_message = "Failed to retrieve app details for editing due to a database error.";
+    }
+}
+
+// Fetch apps for the dropdown
+$apps_list = [];
+if ($auth) {
+    try {
+        $stmt = $db->prepare('SELECT ID, ContainerName FROM apps'); // Use ContainerName
+        $stmt->execute();
+        $apps_list = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        // Log error: error_log("App Edit Dropdown DB Error: " . $e->getMessage());
+        $error_message = "Failed to retrieve app list due to a database error.";
+    }
 }
 ?>
 <html>
 <head>
-    <title>Edit</title>
+    <title>Edit App</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"/>
     <link
         rel="stylesheet"
         href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.colors.min.css"
     />
 </head>
-<?php if ($auth) : ?>
-    <body>
+<body>
     <div class="container" style="margin-top: 6%">
         <header>
             <section>
-                <h1>Apps</h1>
+                <h1>Edit App</h1>
               <button class="secondary" onclick="location.href='../apps.php';">Back</button>
             </section>
         </header>
         <hr />
         <main>
             <section>
-                <div class="overflow-auto">
-                    <!-- drop down menu -->
-                    <form method="post">
-                        <label for="id">Select an app:</label>
+                <?php if ($error_message): ?>
+                    <p style="color: red;"><?php echo htmlspecialchars($error_message); ?></p>
+                <?php endif; ?>
+
+                <?php if (!empty($apps_list)): ?>
+                    <!-- Form to select an app -->
+                    <form method="post" style="<?php echo $app_to_edit ? 'display: none;' : ''; ?>">
+                        <label for="id">Select an app to edit:</label>
                         <select id="id" name="id" required>
                             <?php
-                            $stmt = $db->prepare('SELECT * FROM apps');
-                            $stmt->execute();
-                            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                                echo "<option value='" . $row['ID'] . "'>" . $row['Name'] . "</option>";
+                            foreach ($apps_list as $app) {
+                                echo "<option value='" . htmlspecialchars($app['ID']) . "'>" . htmlspecialchars($app['ContainerName']) . "</option>"; // Use ContainerName
                             }
                             ?>
                         </select>
-                        <button type="submit" class="btn">Edit</button>
+                        <button type="submit" name="edit_app" class="btn">Edit</button>
                     </form>
-                    <?php
-                    if ($_SERVER["REQUEST_METHOD"] == "POST") {
-                        $id = $_POST['id'];
-                        $stmt = $db->prepare('SELECT * FROM apps WHERE ID = :ID');
-                        $stmt->bindParam(':ID', $id, PDO::PARAM_INT);
-                        $stmt->execute();
-                        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-                        ?>
-                        <form method="post">
-                            <label for="name">Name</label>
-                            <input type="text" id="name" name="name" value="<?php echo $row['Name']; ?>" required />
-                            <label for="image">Image</label>
-                            <input type="text" id="image" name="image" value="<?php echo $row['Image']; ?>" required />
-                            <label for="version">Version</label>
-                            <input type="text" id="version" name="version" value="<?php echo $row['Version']; ?>" required />
-                            <label for="link">Link</label>
-                            <input type="text" id="link" name="link" value="<?php echo $row['Url']; ?>" required />
-                            <label for="comments">Comments</label>
-                            <input type="text" id="comments" name="comments" value="<?php echo $row['Comment']; ?>" required />
-                            <input type="hidden" name="id" value="<?php echo $row['ID']; ?>" />
-                            <button type="submit" class="btn">Save</button>
-                        </form>
-                    <?php } ?>
-                </div>
+                <?php elseif (!$error_message) : ?>
+                     <p>No apps available to edit.</p>
+                <?php endif; ?>
+
+                <?php if ($app_to_edit): ?>
+                    <!-- Form to edit the selected app -->
+                    <form method="post">
+                        <input type="hidden" name="id" value="<?php echo htmlspecialchars($app_to_edit['ID']); ?>" />
+                        <label for="containerName">Container Name</label> <!-- Use containerName -->
+                        <input type="text" id="containerName" name="containerName" value="<?php echo htmlspecialchars($app_to_edit['ContainerName']); ?>" required />
+                        <label for="image">Image</label>
+                        <input type="text" id="image" name="image" value="<?php echo htmlspecialchars($app_to_edit['Image']); ?>" required />
+                        <label for="version">Version</label>
+                        <input type="text" id="version" name="version" value="<?php echo htmlspecialchars($app_to_edit['Version'] ?? ''); ?>" /> <!-- Handle potential missing Version -->
+                        <label for="url">URL</label> <!-- Use url -->
+                        <input type="text" id="url" name="url" value="<?php echo htmlspecialchars($app_to_edit['Url']); ?>" required />
+                        <label for="comment">Comment</label> <!-- Use comment -->
+                        <input type="text" id="comment" name="comment" value="<?php echo htmlspecialchars($app_to_edit['Comment']); ?>" />
+                        <button type="submit" name="save_app" class="btn">Save Changes</button>
+                        <button type="button" class="secondary" onclick="window.location.href='edit.php';">Cancel / Select Different App</button> 
+                    </form>
+                <?php endif; ?>
             </section>
-            <footer>
-                <div class="container">
-                    <hr />
-                    <p>&copy; 2024</p>
-                </div>
-            </footer>
         </main>
+        <footer>
+            <div class="container">
+                <hr />
+                <p>&copy; 2024</p>
+            </div>
+        </footer>
     </div>
-    </body>
-<?php else : ?>
-    <body>
-    <div class="container" style="margin-top: 8%;">
-        <h1>Unauthorized</h1>
-        <hr />
-        <p>You are not authorized to view this page.</p>
-    </div>
-    <footer>
-        <div class="container">
-            <hr />
-            <p>&copy; 2024</p>
-        </div>
-    </footer>
-    </body>
-<?php endif; ?>
+</body>
 </html>
 
 

@@ -1,48 +1,52 @@
 <?php
-session_start();
-$db = new PDO('sqlite:../db.sqlite');
-if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > 1800)) {
-    // last request was more than 30 minutes ago
-    session_unset();     // unset $_SESSION variable for the run-time
-    session_destroy();   // destroy session data in storage
-}
-$_SESSION['LAST_ACTIVITY'] = time(); // update last activity time stamp
-$username = $_SESSION['username'];
-$password = $_SESSION['password'];
-if (isset($_SESSION['username']) and isset($_SESSION['password'])) {
-    $stmt = $db->prepare('SELECT * FROM users WHERE username = :username');
-    $stmt->bindParam(':username', $username, PDO::PARAM_STR);
-    $stmt->execute();
-    if ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        if (password_verify($password, $row['password'])) {
-            $auth = true;
-        } else {
-            $auth = false;
-        }
-    } else {
-        $auth = false;
-    }
-} else {
-    $auth = false;
-}
+require_once '../includes/auth.php'; // Use centralized auth
+
 // Add new user
 if ($auth) {
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $username = $_POST['username'];
-        $password = " ";
-        $stmt = $db->prepare('INSERT INTO users (username, password) VALUES (:username, :password)');
-        $stmt->bindParam(':username', $username, PDO::PARAM_STR);
-        $password_hash = password_hash($password, PASSWORD_DEFAULT);
-        $stmt->bindParam(':password', $password_hash, PDO::PARAM_STR);
-        $stmt->execute();
-        // redirect back to users.php
-        header('Location: ../users.php');
+        $password = $_POST['password']; // Get password from form
+        $email = $_POST['email']; // Get email from form
+        $isAdmin = isset($_POST['isAdmin']) ? 1 : 0; // Check if isAdmin checkbox is checked
+
+        // Validate inputs (basic example)
+        if (empty($username) || empty($password)) {
+            $error_message = "Username and password are required.";
+        } else {
+            try {
+                // Check if username already exists
+                $stmtCheck = $db->prepare('SELECT ID FROM users WHERE username = :username');
+                $stmtCheck->bindParam(':username', $username, PDO::PARAM_STR);
+                $stmtCheck->execute();
+                if ($stmtCheck->fetch()) {
+                    $error_message = "Username already exists.";
+                } else {
+                    // Hash the password
+                    $password_hash = password_hash($password, PASSWORD_DEFAULT);
+
+                    // Prepare the insert statement with all columns
+                    $stmt = $db->prepare('INSERT INTO users (username, password, email, IsAdmin) VALUES (:username, :password, :email, :isAdmin)');
+                    $stmt->bindParam(':username', $username, PDO::PARAM_STR);
+                    $stmt->bindParam(':password', $password_hash, PDO::PARAM_STR);
+                    $stmt->bindParam(':email', $email, PDO::PARAM_STR);
+                    $stmt->bindParam(':isAdmin', $isAdmin, PDO::PARAM_INT);
+                    $stmt->execute();
+
+                    // Redirect back to users.php on success
+                    header('Location: ../users.php');
+                    exit; // Stop script execution after redirect
+                }
+            } catch (PDOException $e) {
+                // Log error: error_log("Database Error: " . $e->getMessage());
+                $error_message = "Database error during user creation. Please try again.";
+            }
+        }
     }
 }
 ?>
 <html>
 <head>
-    <title>New</title>
+    <title>New User</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"/>
     <link
         rel="stylesheet"
@@ -61,10 +65,21 @@ if ($auth) {
         <hr />
         <main>
             <section>
+                <?php if (!empty($error_message)): ?>
+                    <p style="color: red;"><?php echo htmlspecialchars($error_message); ?></p>
+                <?php endif; ?>
                 <div class="overflow-auto">
                     <form method="post">
                         <label for="username">Username</label>
                         <input type="text" id="username" name="username" required>
+                        <label for="password">Password</label> 
+                        <input type="password" id="password" name="password" required> <!-- Added password field -->
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email"> <!-- Added email field -->
+                        <label for="isAdmin" style="padding-bottom: 10px;">
+                            <input type="checkbox" id="isAdmin" name="isAdmin" value="1">
+                            Is Admin?
+                        </label> <!-- Added IsAdmin checkbox -->
                         <button type="submit">Create</button>
                     </form>
                 </div>

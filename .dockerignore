@@ -1,0 +1,9 @@
+**/.idea
+README.md
+db.sqlite
+docker-compose.yml
+.prettierc.json
+composer.phar
+composer.json
+composer.lock
+.gitignore
