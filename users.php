@@ -1,25 +1,10 @@
 <?php
-// Check auth
+require_once 'includes/auth.php';
+require_once 'includes/functions.php';
+require_admin(); // This function ensures only admins can access this page
+// The auth.php include already handles authentication, so we can remove the duplicate code
 $db = new PDO('sqlite:db.sqlite');
-session_start();
 $username = $_SESSION['username'];
-$password = $_SESSION['password'];
-if (isset($_SESSION['username']) and isset($_SESSION['password'])) {
-    $stmt = $db->prepare('SELECT * FROM users WHERE username = :username');
-    $stmt->bindParam(':username', $username, PDO::PARAM_STR);
-    $stmt->execute();
-    if ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        if (password_verify($password, $row['password'])) {
-            $auth = true;
-        } else {
-            $auth = false;
-        }
-    } else {
-        $auth = false;
-    }
-} else {
-    $auth = false;
-}
 ?>
 <html>
 <head>
@@ -62,10 +47,10 @@ if (isset($_SESSION['username']) and isset($_SESSION['password'])) {
                             $stmt->execute();
                             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                                 echo '<tr>';
-                                echo '<td>' . $row['username'] . '</td>';
+                                echo '<td>' . htmlspecialchars($row['username']) . '</td>';
                                 // Only display the delete icon if the username is not the current user
                                 if ($row['username'] !== $username) {
-                                    echo '<td><i class="fa fa-trash" aria-hidden="true" onclick="deleteUser(\'' . $row['username'] . '\')"></i></td>'; // New table data cell for delete icon
+                                    echo '<td><i class="fa fa-trash" aria-hidden="true" onclick="deleteUser(\'' . htmlspecialchars($row['username']) . '\')"></i></td>'; // New table data cell for delete icon
                                 } else {
                                     echo '<td></td>'; // Empty cell for current user
                                 }
@@ -74,24 +59,49 @@ if (isset($_SESSION['username']) and isset($_SESSION['password'])) {
                             ?>
                             </tbody>
                         </table>
+                        
+                        <!-- Add a hidden CSRF token field -->
+                        <input type="hidden" id="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
+                        
                         <script>
                           function deleteUser(username) {
-                            // Send a POST request to delete_user.php with the username
+                            // Confirmation dialog
+                            if (!confirm("Are you sure you want to delete user: " + username + "?")) {
+                                return; // Stop if user cancels
+                            }
+                            
+                            // Get the CSRF token
+                            const csrfToken = document.getElementById('csrf_token').value;
+                            
+                            // Send a POST request to delete_user.php with the username and CSRF token
                             fetch('delete_user.php', {
                               method: 'POST',
                               headers: {
                                 'Content-Type': 'application/x-www-form-urlencoded',
                               },
-                              body: 'username=' + encodeURIComponent(username),
+                              body: 'username=' + encodeURIComponent(username) + 
+                                    '&csrf_token=' + encodeURIComponent(csrfToken),
                             })
-                              .then(response => response.text())
-                              .then(data => {
-                                // Reload the page after the user is deleted
-                                location.reload();
-                              });
+                            .then(response => {
+                              if (!response.ok) {
+                                return response.text().then(text => { throw new Error(text || 'Error deleting user') });
+                              }
+                              return response.text();
+                            })
+                            .then(data => {
+                              // Display success message and reload the page
+                              alert('User deleted successfully');
+                              location.reload();
+                            })
+                            .catch(error => {
+                              // Display error message
+                              alert('Error: ' + error.message);
+                            });
                           }
                         </script>
+                    </div>
                 </section>
             </main>
+        </div>
     </body>
 <?php endif; ?>

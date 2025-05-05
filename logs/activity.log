@@ -1,0 +1,13 @@
+[2025-04-11 20:00:26] User: setup | Action: create_admin | Details: Admin user created
+[2025-04-11 20:07:02] User: setup | Action: create_admin | Details: Admin user created
+[2025-04-26 22:42:05] [DOCKER] Executed: docker container start minecraft (Exit code: 1)
+[2025-04-27 12:00:34] [DOCKER] Executed: docker container ls --format "{{.ID}}\t{{.Image}}\t{{.Status}}\t{{.Names}}" --all (Exit code: 1)
+[2025-04-27 12:00:34] [DOCKER] Executed: docker container inspect container_name (Exit code: 1)
+[2025-04-27 14:27:28] [DOCKER] Executed: docker container ls --format "{{.ID}}\t{{.Image}}\t{{.Status}}\t{{.Names}}" --all (Exit code: 1)
+[2025-04-27 14:27:28] [DOCKER] Executed: docker container inspect container_name (Exit code: 1)
+[2025-04-27 14:27:29] [DOCKER] Executed: docker container ls --format "{{.ID}}\t{{.Image}}\t{{.Status}}\t{{.Names}}" --all (Exit code: 1)
+[2025-04-27 14:27:29] [DOCKER] Executed: docker container inspect container_name (Exit code: 1)
+[2025-04-27 14:31:04] [DOCKER] Executed: docker container ls --format "{{.ID}}\t{{.Image}}\t{{.Status}}\t{{.Names}}" --all (Exit code: 1)
+[2025-04-27 14:31:04] [DOCKER] Executed: docker container inspect container_name (Exit code: 1)
+[2025-04-27 14:31:08] [DOCKER] Executed: docker container ls --format "{{.ID}}\t{{.Image}}\t{{.Status}}\t{{.Names}}" --all (Exit code: 1)
+[2025-04-27 14:31:08] [DOCKER] Executed: docker container inspect container_name (Exit code: 1)

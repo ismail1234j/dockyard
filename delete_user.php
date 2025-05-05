@@ -1,43 +1,57 @@
 <?php
-session_start();
-$db = new PDO('sqlite:db.sqlite');
-if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > 1800)) {
-    // last request was more than 30 minutes ago
-    session_unset();     // unset $_SESSION variable for the run-time
-    session_destroy();   // destroy session data in storage
-}
-$_SESSION['LAST_ACTIVITY'] = time(); // update last activity time stamp
-$username = $_SESSION['username'];
-$password = $_SESSION['password'];
-if (isset($_SESSION['username']) and isset($_SESSION['password'])) {
-    $stmt = $db->prepare('SELECT * FROM users WHERE username = :username');
-    $stmt->bindParam(':username', $username, PDO::PARAM_STR);
-    $stmt->execute();
-    if ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        if (password_verify($password, $row['password'])) {
-            $auth = true;
-        } else {
-            $auth = false;
-        }
-    } else {
-        $auth = false;
-    }
-} else {
-    $auth = false;
-}
+require_once 'includes/auth.php'; // Use centralized auth
+
+// Require admin privileges for user deletion
+require_admin();
+
+$error_message = null;
+$success_message = null;
+
 if ($auth) {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        // Validate CSRF token for AJAX requests
+        if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+            http_response_code(403); // Forbidden
+            echo 'Error: Security validation failed.';
+            exit;
+        }
+        
         if (isset($_POST['username'])) {
             $usernameToDelete = $_POST['username'];
-            $stmt = $db->prepare('DELETE FROM users WHERE username = :username');
-            $stmt->bindParam(':username', $usernameToDelete, PDO::PARAM_STR);
-            $stmt->execute();
-            echo 'User deleted successfully';
+
+            // Prevent deleting the currently logged-in user
+            if ($usernameToDelete === $_SESSION['username']) {
+                http_response_code(400); // Bad Request
+                echo 'Error: Cannot delete the currently logged-in user.';
+                exit;
+            }
+
+            try {
+                $stmt = $db->prepare('DELETE FROM users WHERE username = :username');
+                $stmt->bindParam(':username', $usernameToDelete, PDO::PARAM_STR);
+                $stmt->execute();
+                if ($stmt->rowCount() > 0) {
+                    echo 'User deleted successfully';
+                } else {
+                    http_response_code(404); // Not Found
+                    echo 'Error: User not found.';
+                }
+            } catch (PDOException $e) {
+                // Log error: error_log("User Deletion DB Error: " . $e->getMessage());
+                http_response_code(500); // Internal Server Error
+                echo 'Error: Database error during user deletion.';
+            }
         } else {
-            echo 'No username provided';
+            http_response_code(400); // Bad Request
+            echo 'Error: No username provided.';
         }
     } else {
-        echo 'Invalid request method';
+        http_response_code(405); // Method Not Allowed
+        echo 'Error: Invalid request method.';
     }
+} else {
+    // Auth check failed (handled by auth.php redirect, but added for completeness)
+    http_response_code(401); // Unauthorized
+    echo 'Error: Unauthorized.';
 }
 ?>
