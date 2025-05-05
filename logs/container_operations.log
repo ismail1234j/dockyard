@@ -1,0 +1,135 @@
+2025-05-03 05:39:10 | USER=root | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-03 21:02:36 | USER=root | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-03 21:08:40 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-03 21:10:37 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-03 21:10:38 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-03 21:10:39 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-03 21:10:39 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-03 21:10:45 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-03 21:11:25 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-03 21:11:26 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-03 21:11:27 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-03 21:11:57 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-04 11:23:51 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-04 11:26:37 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-04 11:26:55 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-04 11:28:08 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-04 11:31:04 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-04 11:52:49 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-04 11:54:24 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-04 11:59:17 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-04 12:00:15 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-04 12:00:41 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-04 12:03:22 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-04 12:04:07 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-04 12:04:50 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-04 12:05:44 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-04 12:06:33 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-04 12:07:09 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-04 12:08:11 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-04 12:11:34 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-04 12:12:42 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-04 12:13:15 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-04 12:14:36 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-04 12:16:05 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-04 12:18:10 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-05 16:52:52 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-05 16:53:28 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-05 16:55:50 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-05 16:56:13 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-05 17:54:02 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-05 17:55:54 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-05 17:56:49 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-05 17:57:26 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-05 17:58:02 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-05 17:58:12 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-05 18:04:28 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-05 18:12:05 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-05 18:14:06 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-05 18:14:08 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-05 18:14:10 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-05 18:14:48 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-05 18:25:18 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-05 18:25:58 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-05 18:26:08 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-05 18:44:55 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-05 18:44:56 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-05 18:44:59 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-05 18:45:02 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-05 18:45:24 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-05 18:45:25 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-05 18:45:25 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-05 18:45:39 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-05 18:45:40 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-05 18:45:59 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-05 18:46:10 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-05 18:47:24 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-05 18:47:58 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-05 18:48:55 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-05 18:49:05 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-05 18:49:58 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-05 18:52:55 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-05 18:56:13 | USER=www-data | CONTAINER=code-server | ACTION=INVALID | RESULT=Invalid action: info
+2025-05-05 18:58:01 | USER=www-data | CONTAINER=code-server | ACTION=STATUS | RESULT=exited
+2025-05-05 18:58:20 | USER=www-data | CONTAINER=code-server | ACTION=STATUS | RESULT=exited
+2025-05-05 18:58:36 | USER=www-data | CONTAINER=code-server | ACTION=STATUS | RESULT=exited
+2025-05-05 18:58:37 | USER=www-data | CONTAINER=code-server | ACTION=STATUS | RESULT=exited
+2025-05-05 18:58:39 | USER=www-data | CONTAINER=code-server | ACTION=STATUS | RESULT=exited
+2025-05-05 18:58:45 | USER=www-data | CONTAINER=code-server | ACTION=STATUS | RESULT=exited
+2025-05-05 18:59:49 | USER=www-data | CONTAINER=code-server | ACTION=STATUS | RESULT=exited
+2025-05-05 19:03:59 | USER=www-data | CONTAINER=code-server | ACTION=STATUS | RESULT=exited
+2025-05-05 19:04:00 | USER=www-data | CONTAINER=code-server | ACTION=STATUS | RESULT=exited
+2025-05-05 19:05:04 | USER=www-data | CONTAINER=code-server | ACTION=STATUS | RESULT=exited
+2025-05-05 19:05:05 | USER=www-data | CONTAINER=code-server | ACTION=STATUS | RESULT=exited
+2025-05-05 19:05:06 | USER=www-data | CONTAINER=code-server | ACTION=STATUS | RESULT=exited
+2025-05-05 19:05:08 | USER=www-data | CONTAINER=code-server | ACTION=STATUS | RESULT=exited
+2025-05-05 19:05:44 | USER=www-data | CONTAINER=code-server | ACTION=STATUS | RESULT=exited
+2025-05-05 19:05:45 | USER=www-data | CONTAINER=code-server | ACTION=STATUS | RESULT=exited
+2025-05-05 19:05:47 | USER=www-data | CONTAINER=code-server | ACTION=STATUS | RESULT=exited
+2025-05-05 19:05:48 | USER=www-data | CONTAINER=code-server | ACTION=STATUS | RESULT=exited
+2025-05-05 19:05:49 | USER=www-data | CONTAINER=code-server | ACTION=STATUS | RESULT=exited
+2025-05-05 19:06:17 | USER=www-data | CONTAINER=code-server | ACTION=STATUS | RESULT=exited
+2025-05-05 19:07:30 | USER=www-data | CONTAINER=code-server | ACTION=STATUS | RESULT=exited
+2025-05-05 19:07:53 | USER=www-data | CONTAINER=code-server | ACTION=STATUS | RESULT=exited
+2025-05-05 19:08:22 | USER=www-data | CONTAINER=code-server | ACTION=STATUS | RESULT=exited
+2025-05-05 19:09:39 | USER=www-data | CONTAINER=code-server | ACTION=STATUS | RESULT=exited
+2025-05-05 19:09:53 | USER=www-data | CONTAINER=code-server | ACTION=STATUS | RESULT=exited
+2025-05-05 19:10:29 | USER=www-data | CONTAINER=code-server | ACTION=STATUS | RESULT=exited
+2025-05-05 19:10:42 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-05 19:10:43 | USER=www-data | CONTAINER=minecraft_backup | ACTION=STATUS | RESULT=exited
+2025-05-05 19:10:45 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-05 19:10:48 | USER=www-data | CONTAINER=immich_redis | ACTION=STATUS | RESULT=running
+2025-05-05 19:10:50 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-05 19:10:53 | USER=www-data | CONTAINER=immich_machine_learning | ACTION=STATUS | RESULT=running
+2025-05-05 19:11:45 | USER=www-data | CONTAINER=immich_machine_learning | ACTION=STATUS | RESULT=running
+2025-05-05 19:12:20 | USER=www-data | CONTAINER=immich_machine_learning | ACTION=STATUS | RESULT=running
+2025-05-05 19:12:57 | USER=www-data | CONTAINER=immich_machine_learning | ACTION=STATUS | RESULT=running
+2025-05-05 19:13:38 | USER=www-data | CONTAINER=immich_machine_learning | ACTION=STATUS | RESULT=running
+2025-05-05 19:13:39 | USER=www-data | CONTAINER=immich_machine_learning | ACTION=STATUS | RESULT=running
+2025-05-05 19:13:50 | USER=www-data | CONTAINER=immich_machine_learning | ACTION=STATUS | RESULT=running
+2025-05-05 19:14:09 | USER=www-data | CONTAINER=immich_machine_learning | ACTION=STATUS | RESULT=running
+2025-05-05 19:14:27 | USER=www-data | CONTAINER=immich_machine_learning | ACTION=STATUS | RESULT=running
+2025-05-05 19:16:02 | USER=www-data | CONTAINER=immich_machine_learning | ACTION=STATUS | RESULT=running
+2025-05-05 19:18:00 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-05 19:19:23 | USER=www-data | CONTAINER=code-server | ACTION=STATUS | RESULT=exited
+2025-05-05 19:20:14 | USER=www-data | CONTAINER=code-server | ACTION=STATUS | RESULT=exited
+2025-05-05 19:22:45 | USER=www-data | CONTAINER=code-server | ACTION=STATUS | RESULT=exited
+2025-05-05 19:22:46 | USER=www-data | CONTAINER=code-server | ACTION=STATUS | RESULT=exited
+2025-05-05 19:23:10 | USER=www-data | CONTAINER=code-server | ACTION=STATUS | RESULT=exited
+2025-05-05 19:24:07 | USER=www-data | CONTAINER=code-server | ACTION=STATUS | RESULT=exited
+2025-05-05 19:29:00 | USER=www-data | CONTAINER=code-server | ACTION=STATUS | RESULT=exited
+2025-05-05 19:29:04 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-05 19:29:33 | USER=www-data | CONTAINER=cloudflared_server | ACTION=STATUS | RESULT=running
+2025-05-05 19:29:36 | USER=www-data | CONTAINER=cloudflared_server | ACTION=STOP | RESULT=cloudflared_server
+2025-05-05 19:30:02 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-05 19:30:06 | USER=www-data | CONTAINER=cloudflared_server | ACTION=STATUS | RESULT=exited
+2025-05-05 19:30:09 | USER=www-data | CONTAINER=cloudflared_server | ACTION=START | RESULT=cloudflared_server
+2025-05-05 19:30:52 | USER=www-data | CONTAINER=cloudflared_server | ACTION=STATUS | RESULT=running
+2025-05-05 19:30:55 | USER=www-data | CONTAINER=cloudflared_server | ACTION=STOP | RESULT=cloudflared_server
+2025-05-05 19:32:59 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers
+2025-05-05 19:33:03 | USER=www-data | CONTAINER=cloudflared_server | ACTION=STATUS | RESULT=exited
+2025-05-05 19:33:06 | USER=www-data | CONTAINER=cloudflared_server | ACTION=START | RESULT=cloudflared_server
+2025-05-05 19:33:07 | USER=www-data | CONTAINER=cloudflared_server | ACTION=STATUS | RESULT=running
+2025-05-05 19:33:14 | USER=www-data | CONTAINER=cloudflared_server | ACTION=STOP | RESULT=cloudflared_server
+2025-05-05 19:33:24 | USER=www-data | CONTAINER=cloudflared_server | ACTION=STATUS | RESULT=exited
+2025-05-05 19:33:29 | USER=www-data | CONTAINER=ALL | ACTION=LIST | RESULT=Listed all containers

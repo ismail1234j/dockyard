@@ -3,11 +3,12 @@ require_once 'includes/auth.php';
 require_once 'includes/functions.php';
 require_admin(); // This function ensures only admins can access this page
 ?>
-<html>
+<html data-theme="light">
 <head>
     <title>Settings</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.orange.min.css"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.colors.min.css"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <?php if ($auth): ?>
     <body>
@@ -23,6 +24,8 @@ require_admin(); // This function ensures only admins can access this page
                 <section>
                     <h2>System Settings</h2>
                     <form action="update_settings.php" method="post">
+                        <!-- Add CSRF token field -->
+                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
                         <!-- Add your settings form fields here -->
                         <div class="grid">
                             <label for="setting1">

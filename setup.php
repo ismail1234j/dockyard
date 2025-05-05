@@ -1,48 +1,96 @@
 <?php
-// $db = new PDO('sqlite:db.sqlite');
-/*
-$createAppsTableQuery = "
-    CREATE TABLE IF NOT EXISTS apps (
-        ID INTEGER PRIMARY KEY AUTOINCREMENT, 
-        ContainerName TEXT NOT NULL, 
-        Image TEXT NOT NULL,
-        Comment TEXT NOT NULL,
-        Url TEXT NOT NULL
-    )";
+// Database initialization script
 
-$createUsersTableQuery = "
-    CREATE TABLE IF NOT EXISTS users (
-        ID INTEGER PRIMARY KEY AUTOINCREMENT, 
-        username TEXT NOT NULL, 
-        password TEXT NOT NULL,
-        email TEXT,
-        IsAdmin BOOLEAN NOT NULL DEFAULT 0
-    )";
+// Determine if this is being run via CLI or web
+$isWeb = isset($_SERVER['REQUEST_METHOD']);
+$outputFormat = $isWeb ? 'html' : 'cli';
 
-$insertQuery = "INSERT INTO users (username, password, email, IsAdmin) VALUES ('admin', '" . password_hash('pass', PASSWORD_DEFAULT) . "', '', TRUE)";
+// Function for consistent output across CLI and web
+function output($message, $format = null) {
+    global $outputFormat;
+    $format = $format ?? $outputFormat;
+    
+    if ($format === 'html') {
+        echo htmlspecialchars($message) . "<br>\n";
+    } else {
+        echo $message . "\n";
+    }
+}
 
-// Execute the query's
-$db->exec($createUsersTableQuery);
-$db->exec($insertQuery);
-$db->exec($createAppsTableQuery);
-*/
-// remove test app
-/*
-$deleteQuery = "DELETE FROM apps WHERE ContainerName = 'TestMinecraft'";
-$db->exec($deleteQuery);
+// Database path - the file should already exist with correct permissions
+$dbPath = __DIR__ . '/data';
+$dbFile = $dbPath . '/db.sqlite';
 
-// delete user mahdjew
-$deleteUserQuery = "DELETE FROM users WHERE username = 'mahdjew'";
-$db->exec($deleteUserQuery);
+// Verify database file exists - should have been created by Docker
+if (!file_exists($dbFile)) {
+    output("Database file does not exist. It should have been created by Docker.", 'cli');
+    output("Please check the Docker container setup.", 'cli');
+    exit(1);
+}
 
-// change admin password
-$updateQuery = "UPDATE users SET password = '" . password_hash('$0IsmailServer2010', PASSWORD_DEFAULT) . "' WHERE username = 'admin'";
-$db->exec($updateQuery);
 
-// Create User Mahjew
-$insertQuery = "INSERT INTO users (username, password, email, IsAdmin) VALUES ('mahdjew', '" . password_hash('£1MahdiStinks25', PASSWORD_DEFAULT) . "', '', TRUE)";
-$db->exec($insertQuery);
-*/
+output("Connecting to database...", 'cli');
+$db = new PDO('sqlite:' . $dbFile);
+    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-//$insertQuery = "INSERT INTO apps (ContainerName, Image, Comment, Url) VALUES ('TestMinecraft', 'bedrock', 'Test comment', 'server:19132')";
-// $db->exec($insertQuery);
+    // Create or modify apps table with enhanced fields for container management
+    output("Creating apps table...", 'cli');
+    $createAppsTableQuery = "
+        CREATE TABLE IF NOT EXISTS apps (
+            ID INTEGER PRIMARY KEY AUTOINCREMENT, 
+            ContainerName TEXT NOT NULL UNIQUE,
+            Version TEXT DEFAULT 'latest',
+            Status TEXT DEFAULT 'unknown',
+            Comment TEXT DEFAULT '',
+            Port TEXT DEFAULT ''
+        )";
+
+    // Create users table
+    output("Creating users table...", 'cli');
+    $createUsersTableQuery = "
+        CREATE TABLE IF NOT EXISTS users (
+            ID INTEGER PRIMARY KEY AUTOINCREMENT, 
+            username TEXT NOT NULL UNIQUE, 
+            password TEXT NOT NULL,
+            email TEXT,
+            IsAdmin BOOLEAN NOT NULL DEFAULT 0
+        )";
+
+    // Create new container permissions table to manage user access
+    output("Creating container permissions table...", 'cli');
+    $createContainerPermissionsQuery = "
+        CREATE TABLE IF NOT EXISTS container_permissions (
+            ID INTEGER PRIMARY KEY AUTOINCREMENT,
+            UserID INTEGER NOT NULL,
+            ContainerID INTEGER NOT NULL,
+            CanView BOOLEAN NOT NULL DEFAULT 1,
+            CanStart BOOLEAN NOT NULL DEFAULT 0,
+            CanStop BOOLEAN NOT NULL DEFAULT 0,
+            FOREIGN KEY (UserID) REFERENCES users(ID) ON DELETE CASCADE,
+            FOREIGN KEY (ContainerID) REFERENCES apps(ID) ON DELETE CASCADE,
+            UNIQUE(UserID, ContainerID)
+        )";
+
+    // Execute the queries
+    $db->exec($createAppsTableQuery);
+    $db->exec($createUsersTableQuery);
+    $db->exec($createContainerPermissionsQuery);
+
+    // Check if default admin user exists, if not create it
+    $adminCheckQuery = "SELECT COUNT(*) FROM users WHERE username = 'admin'";
+    $adminExists = $db->query($adminCheckQuery)->fetchColumn();
+    
+    if ($adminExists == 0) {
+        output("Creating default admin user (admin/pass)...", 'cli');
+        $insertAdminQuery = "INSERT INTO users (username, password, email, IsAdmin) 
+                            VALUES ('admin', '" . password_hash('pass', PASSWORD_DEFAULT) . "', '', 1)";
+        $db->exec($insertAdminQuery);
+        output("Default admin user created.");
+    }
+    
+    output("Database schema setup completed successfully!");
+    
+    if ($isWeb) {
+        // If running via web, add a link to go to the login page
+        echo '<p><a href="login.php">Go to login page</a></p>';
+    }
