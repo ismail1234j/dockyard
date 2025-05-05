@@ -1,13 +1,16 @@
 <?php
-// Centralized Authentication, Session Timeout, and DB Connection
-
 session_start();
 
-// Determine the correct relative path to the database file
-$db_path = 'db.sqlite'; // Default for root files
-if (strpos($_SERVER['PHP_SELF'], '/apps/') !== false || strpos($_SERVER['PHP_SELF'], '/users/') !== false) {
-    $db_path = '../db.sqlite'; // Path for files in subdirectories
+/*
+if (isset($_SERVER['SERVER_SOFTWARE']) && stripos($_SERVER['SERVER_SOFTWARE'], 'LiteSpeed') == false) {
+    // Running under OpenLiteSpeed or LiteSpeed
+    echo "<script>alert('This app is better worked with OpenLiteSpeed or Litespeed Web Server.');</script>";
 }
+*/
+
+// Determine the correct relative path to the database file
+$root_dir = dirname(__DIR__); // Get parent directory of includes folder
+$db_path = $root_dir . '/data/db.sqlite'; // Default full path for database
 
 try {
     $db = new PDO('sqlite:' . $db_path);

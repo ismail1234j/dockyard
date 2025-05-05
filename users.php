@@ -3,13 +3,13 @@ require_once 'includes/auth.php';
 require_once 'includes/functions.php';
 require_admin(); // This function ensures only admins can access this page
 // The auth.php include already handles authentication, so we can remove the duplicate code
-$db = new PDO('sqlite:db.sqlite');
+$db = new PDO('sqlite:data/db.sqlite');
 $username = $_SESSION['username'];
 ?>
-<html>
+<html data-theme="light">
 <head>
     <title>Users</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.orange.min.css"/>
     <link
         rel="stylesheet"
         href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.colors.min.css"
@@ -18,6 +18,7 @@ $username = $_SESSION['username'];
         rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
         />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <?php if ($auth): ?>
     <body>

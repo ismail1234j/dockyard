@@ -44,14 +44,15 @@ if ($auth) {
     }
 }
 ?>
-<html>
+<html data-theme="light">
 <head>
     <title>New User</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.orange.min.css"/>
     <link
         rel="stylesheet"
         href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.colors.min.css"
     />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <?php if ($auth) : ?>
     <body>
@@ -70,6 +71,8 @@ if ($auth) {
                 <?php endif; ?>
                 <div class="overflow-auto">
                     <form method="post">
+                        <!-- Add CSRF token field -->
+                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
                         <label for="username">Username</label>
                         <input type="text" id="username" name="username" required>
                         <label for="password">Password</label> 

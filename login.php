@@ -3,7 +3,7 @@ session_start();
 
 // Database connection and authentication logic
 try {
-    $db = new PDO('sqlite:db.sqlite');
+    $db = new PDO('sqlite:data/db.sqlite');
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION); // Ensure PDO throws exceptions
 
     if (!isset($_SESSION['username']) && !isset($_SESSION['authenticated'])){
@@ -45,12 +45,12 @@ try {
 }
 ?>
 <!DOCTYPE html>
-<html>
+<html data-theme="light">
     <head>
         <title>Login</title>
       <link
         rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"
+        href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.orange.min.css"
       />
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
     </head>

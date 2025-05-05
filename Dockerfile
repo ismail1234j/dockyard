@@ -1,8 +1,12 @@
-# Use official PHP 8.4 Apache image (Debian Bullseye base)
-FROM php:8.4-apache-bullseye
+# Use official PHP 8.1 Apache image (Debian Bullseye base)
+FROM php:8.1-apache-bullseye
 
 # Set working directory
 WORKDIR /var/www/html
+
+# Copy application files
+COPY --chown=www-data:www-data . /var/www/html/
+RUN chmod -R 777 /var/www/html
 
 # Install system dependencies, PHP extensions, and Docker CLI
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -17,6 +21,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     zip \
     libsqlite3-dev \
     libicu-dev \
+    sqlite3 \
     && docker-php-ext-install pdo pdo_sqlite intl \
     # Install Docker CLI
     && curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg \
@@ -31,28 +36,37 @@ RUN a2enmod rewrite
 # Add www-data to docker group (make sure host group ID matches 999 if needed)
 RUN groupadd -g 999 docker || true && usermod -aG docker www-data
 
-# Copy application files
-COPY . /var/www/html/
+# Create necessary directories before copying files
+RUN mkdir -p /var/www/html/data \
+    && mkdir -p /var/www/html/logs \
+    && chmod 777 /var/www/html/data \
+    && chmod 777 /var/www/html/logs
 
-# Configure passwordless sudo only for docker script (if using CLI proxy)
+# Create empty database file with proper permissions
+RUN touch /var/www/html/data/db.sqlite \
+    && chown www-data:www-data /var/www/html/data/db.sqlite \
+    && chmod 777 /var/www/html/data/db.sqlite
+
+# Configure passwordless sudo for docker management scripts
 RUN echo "www-data ALL=(ALL) NOPASSWD: /var/www/html/docker-minecraft.sh" > /etc/sudoers.d/docker-minecraft \
-    && chmod 0440 /etc/sudoers.d/docker-minecraft
+    && echo "www-data ALL=(ALL) NOPASSWD: /var/www/html/manage_containers.sh" > /etc/sudoers.d/manage-containers \
+    && chmod 0440 /etc/sudoers.d/docker-minecraft \
+    && chmod 0440 /etc/sudoers.d/manage-containers
+
+# Set proper permissions for executable scripts
+RUN chmod +x /var/www/html/docker-minecraft.sh \
+    && chmod +x /var/www/html/manage_containers.sh \
+    && chmod +x /var/www/html/extras/entrypoint.sh
 
 # (Optional) Configure Git safe directory
 RUN git config --global --add safe.directory /var/www/html
 
-# Create log directory and set permissions
-RUN mkdir -p /var/www/html/logs \
-    && chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html \
-    && chmod -R 777 /var/www/html/logs \
-    && chmod +x /var/www/html/docker-minecraft.sh
+# Copy entrypoint script to proper location and make it executable
+COPY extras/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
 # Expose HTTP port
 EXPOSE 80
-
-COPY extras/entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
 
 # Start Apache
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
