@@ -3,42 +3,47 @@ require_once '../includes/auth.php'; // Use centralized auth
 
 // Add new user
 if ($auth) {
-    if ($_SERVER["REQUEST_METHOD"] == "POST") {
-        $username = $_POST['username'];
-        $password = $_POST['password']; // Get password from form
-        $email = $_POST['email']; // Get email from form
-        $isAdmin = isset($_POST['isAdmin']) ? 1 : 0; // Check if isAdmin checkbox is checked
+    if ($_SERVER["REQUEST_METHOD"] == "POST") {        
+        // Validate CSRF token
+            if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+                $error_message = "Security validation failed. Please try again.";
+            } else {
+            $username = $_POST['username'];
+            $password = $_POST['password']; // Get password from form
+            $email = $_POST['email']; // Get email from form
+            $isAdmin = isset($_POST['isAdmin']) ? 1 : 0; // Check if isAdmin checkbox is checked
 
-        // Validate inputs (basic example)
-        if (empty($username) || empty($password)) {
-            $error_message = "Username and password are required.";
-        } else {
-            try {
-                // Check if username already exists
-                $stmtCheck = $db->prepare('SELECT ID FROM users WHERE username = :username');
-                $stmtCheck->bindParam(':username', $username, PDO::PARAM_STR);
-                $stmtCheck->execute();
-                if ($stmtCheck->fetch()) {
-                    $error_message = "Username already exists.";
-                } else {
-                    // Hash the password
-                    $password_hash = password_hash($password, PASSWORD_DEFAULT);
+            // Validate inputs (basic example)
+            if (empty($username) || empty($password)) {
+                $error_message = "Username and password are required.";
+            } else {
+                try {
+                    // Check if username already exists
+                    $stmtCheck = $db->prepare('SELECT ID FROM users WHERE username = :username');
+                    $stmtCheck->bindParam(':username', $username, PDO::PARAM_STR);
+                    $stmtCheck->execute();
+                    if ($stmtCheck->fetch()) {
+                        $error_message = "Username already exists.";
+                    } else {
+                        // Hash the password
+                        $password_hash = password_hash($password, PASSWORD_DEFAULT);
 
-                    // Prepare the insert statement with all columns
-                    $stmt = $db->prepare('INSERT INTO users (username, password, email, IsAdmin) VALUES (:username, :password, :email, :isAdmin)');
-                    $stmt->bindParam(':username', $username, PDO::PARAM_STR);
-                    $stmt->bindParam(':password', $password_hash, PDO::PARAM_STR);
-                    $stmt->bindParam(':email', $email, PDO::PARAM_STR);
-                    $stmt->bindParam(':isAdmin', $isAdmin, PDO::PARAM_INT);
-                    $stmt->execute();
+                        // Prepare the insert statement with all columns
+                        $stmt = $db->prepare('INSERT INTO users (username, password, email, IsAdmin) VALUES (:username, :password, :email, :isAdmin)');
+                        $stmt->bindParam(':username', $username, PDO::PARAM_STR);
+                        $stmt->bindParam(':password', $password_hash, PDO::PARAM_STR);
+                        $stmt->bindParam(':email', $email, PDO::PARAM_STR);
+                        $stmt->bindParam(':isAdmin', $isAdmin, PDO::PARAM_INT);
+                        $stmt->execute();
 
-                    // Redirect back to users.php on success
-                    header('Location: ../users.php');
-                    exit; // Stop script execution after redirect
+                        // Redirect back to users.php on success
+                        header('Location: ../users.php');
+                        exit; // Stop script execution after redirect
+                    }
+                } catch (PDOException $e) {
+                    // Log error: error_log("Database Error: " . $e->getMessage());
+                    $error_message = "Database error during user creation. Please try again.";
                 }
-            } catch (PDOException $e) {
-                // Log error: error_log("Database Error: " . $e->getMessage());
-                $error_message = "Database error during user creation. Please try again.";
             }
         }
     }
