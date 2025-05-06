@@ -25,9 +25,9 @@ function refreshTable() {
   });
 }
 
-async function fetchLogs() {
+async function fetchLogs($containerName) {
     try {
-        const response = await fetch('fetch_logs.php'); // Endpoint to fetch logs
+        const response = await fetch('fetch_logs.php?name=' . $containerName); // Endpoint to fetch logs
         if (response.ok) {
             const logs = await response.text();
             document.getElementById('logs').textContent = logs;
@@ -37,6 +37,18 @@ async function fetchLogs() {
     } catch (error) {
         document.getElementById('logs').textContent = 'Error fetching logs.';
     }
+}
+
+function startContainer(name) {
+  if (confirm("Are you sure you want to start the container " + name + "?")) {
+      window.location.href = "action.php?start=" + encodeURIComponent(name);
+  }
+}
+
+function stopContainer(name) {
+  if (confirm("Are you sure you want to stop the container " + name + "?")) {
+      window.location.href = "action.php?stop=" + encodeURIComponent(name);
+  }
 }
 
 async function fetchPlayers() {

@@ -48,25 +48,12 @@ $status = htmlspecialchars($containerStatus, ENT_QUOTES, 'UTF-8');
                     "></i> Stop
                 </button>
                 <!-- Logs button -->
-                <button class="action-button action-logs" onclick="viewLogs('<?php echo $name; ?>')">
+                <button class="action-button action-logs" onclick="viewLogs()">
                     <i class="fa fa-file
                     "></i> View Logs
                 </button>
             </div>
-            <!-- Use the PHP Modal function to open confirmation dialogues -->
             <script>
-                function startContainer(name) {
-                    if (confirm("Are you sure you want to start the container " + name + "?")) {
-                        window.location.href = "action.php?start=" + encodeURIComponent(name);
-                    }
-                }
-
-                function stopContainer(name) {
-                    if (confirm("Are you sure you want to stop the container " + name + "?")) {
-                        window.location.href = "action.php?stop=" + encodeURIComponent(name);
-                    }
-                }
-
                 function fetchLogs(name) {
                     const logsContainer = document.getElementById('container-logs');
                     logsContainer.innerHTML = '<div class="spinner"></div>'; // Show spinner
