@@ -1,12 +1,14 @@
-# Dockyard
+# dockyard
 
-This Project is still under heavy works. I've currently got most of the features lined out but need to implement them
+A Self Hosted Docker management utility with ease of use in mind. Written in PHP and has a vast variety of indev and already made features e.g.
 
-Not yet drafted:
--MFA
+- User Management
+- 2FA (TOTP)
+- Container Grouping
+- Per user container permissions
+- Self password reset
+- todo
 
-Default username and password for an unmodified config.php;
+## Run it
 
-USERNAME = admin
-
-PASSWORD = pass
+todo
