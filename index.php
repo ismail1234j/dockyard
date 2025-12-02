@@ -2,6 +2,7 @@
 // Remove duplicate session management and use centralized auth
 require_once 'includes/auth.php';
 ?>
+<!DOCTYPE html>
 <html data-theme="light">
     <head>
         <title>Home</title>

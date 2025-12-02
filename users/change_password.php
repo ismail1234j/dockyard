@@ -46,6 +46,7 @@ if ($auth) {
     }
 }
 ?>
+<!DOCTYPE html>
 <html data-theme="light">
 <head>
     <title>Change Password</title>

@@ -6,6 +6,7 @@ require_admin(); // This function ensures only admins can access this page
 $db = new PDO('sqlite:data/db.sqlite');
 $username = $_SESSION['username'];
 ?>
+<!DOCTYPE html>
 <html data-theme="light">
 <head>
     <title>Users</title>
