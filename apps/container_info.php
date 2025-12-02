@@ -67,7 +67,7 @@ $status = htmlspecialchars($containerStatus, ENT_QUOTES, 'UTF-8');
                 }
 
                 function viewLogs() {
-                    const name = '<?php echo $name; ?>';
+                    const name = <?php echo json_encode($name); ?>;
                     window.location.href = 'fetch_logs.php?name=' + encodeURIComponent(name);
                 }
 
