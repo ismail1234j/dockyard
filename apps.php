@@ -111,7 +111,7 @@ if (isset($_GET['info'])) {
     </footer>
   </div>
   
-  <script>window.csrfToken = '<?php echo $_SESSION['csrf_token'] ?? ''; ?>';</script>
+  <script>window.csrfToken = <?php echo json_encode($_SESSION['csrf_token'] ?? ''); ?>;</script>
   <script src="includes/functions.js"></script>
   <script>refreshTable();</script>
 </body>

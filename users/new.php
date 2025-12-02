@@ -49,6 +49,7 @@ if ($auth) {
     }
 }
 ?>
+<!DOCTYPE html>
 <html data-theme="light">
 <head>
     <title>New User</title>

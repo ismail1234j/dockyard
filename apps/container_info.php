@@ -39,11 +39,11 @@ $status = htmlspecialchars($containerStatus, ENT_QUOTES, 'UTF-8');
             <div class="action-buttons">
                 <button class="secondary" onclick="location.href='../apps.php';">Back</button>
                 <!-- Start button -->
-                <button class="action-button action-start" onclick="startContainer('<?php echo $name; ?>')">
+                <button class="action-button action-start" onclick="startContainer(<?php echo json_encode($name); ?>)">
                     <i class="fa fa-play"></i> Start
                 </button>
                 <!-- Stop button -->
-                <button class="action-button action-stop" onclick="stopContainer('<?php echo $name; ?>')">
+                <button class="action-button action-stop" onclick="stopContainer(<?php echo json_encode($name); ?>)">
                     <i class="fa fa-stop
                     "></i> Stop
                 </button>

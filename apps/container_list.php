@@ -37,6 +37,6 @@ foreach ($containers as $containerInfo) {
         echo "<td>-</td>";
     }
 
-    echo "<td><button onclick=\"location.href='apps.php?info=$name';\">Info</button></td>
+    echo "<td><button onclick=\"location.href='apps.php?info=" . urlencode($name) . "';\">Info</button></td>
           </tr>";
 }

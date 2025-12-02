@@ -39,10 +39,14 @@ $db = new PDO('sqlite:' . $dbFile);
         CREATE TABLE IF NOT EXISTS apps (
             ID INTEGER PRIMARY KEY AUTOINCREMENT, 
             ContainerName TEXT NOT NULL UNIQUE,
+            Image TEXT DEFAULT '',
             Version TEXT DEFAULT 'latest',
             Status TEXT DEFAULT 'unknown',
             Comment TEXT DEFAULT '',
-            Port TEXT DEFAULT ''
+            Port TEXT DEFAULT '',
+            Url TEXT DEFAULT '',
+            LastPingStatus INTEGER DEFAULT NULL,
+            LastPingTime TEXT DEFAULT NULL
         )";
 
     // Create users table
