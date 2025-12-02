@@ -54,6 +54,23 @@ $status = htmlspecialchars($containerStatus, ENT_QUOTES, 'UTF-8');
                 </button>
             </div>
             <script>
+                function startContainer(name) {
+                    if (confirm("Are you sure you want to start the container " + name + "?")) {
+                        window.location.href = "action.php?start=" + encodeURIComponent(name);
+                    }
+                }
+
+                function stopContainer(name) {
+                    if (confirm("Are you sure you want to stop the container " + name + "?")) {
+                        window.location.href = "action.php?stop=" + encodeURIComponent(name);
+                    }
+                }
+
+                function viewLogs() {
+                    const name = '<?php echo $name; ?>';
+                    window.location.href = 'fetch_logs.php?name=' + encodeURIComponent(name);
+                }
+
                 function fetchLogs(name) {
                     const logsContainer = document.getElementById('container-logs');
                     logsContainer.innerHTML = '<div class="spinner"></div>'; // Show spinner
@@ -78,3 +95,5 @@ $status = htmlspecialchars($containerStatus, ENT_QUOTES, 'UTF-8');
                 }
             </script>
         </div>
+    </body>
+</html>

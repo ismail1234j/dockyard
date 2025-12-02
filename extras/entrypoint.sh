@@ -6,7 +6,6 @@ fi
 
 # Ensure container management scripts are executable
 chmod +x /var/www/html/manage_containers.sh
-chmod +x /var/www/html/docker-minecraft.sh
 chmod 777 /var/www/html/manage_containers.sh
 
 # Create logs and data directories with proper permissions

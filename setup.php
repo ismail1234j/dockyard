@@ -82,9 +82,9 @@ $db = new PDO('sqlite:' . $dbFile);
     
     if ($adminExists == 0) {
         output("Creating default admin user (admin/pass)...", 'cli');
-        $insertAdminQuery = "INSERT INTO users (username, password, email, IsAdmin) 
-                            VALUES ('admin', '" . password_hash('pass', PASSWORD_DEFAULT) . "', '', 1)";
-        $db->exec($insertAdminQuery);
+        $hashedPassword = password_hash('pass', PASSWORD_DEFAULT);
+        $stmt = $db->prepare("INSERT INTO users (username, password, email, IsAdmin) VALUES (?, ?, ?, ?)");
+        $stmt->execute(['admin', $hashedPassword, '', 1]);
         output("Default admin user created.");
     }
     
