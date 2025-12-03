@@ -27,7 +27,7 @@ function refreshTable() {
 
 async function fetchLogs($containerName) {
     try {
-        const response = await fetch('fetch_logs.php?name=' . $containerName); // Endpoint to fetch logs
+        const response = await fetch('fetch_logs.php?name=' + $containerName); // Endpoint to fetch logs
         if (response.ok) {
             const logs = await response.text();
             document.getElementById('logs').textContent = logs;

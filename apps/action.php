@@ -13,7 +13,14 @@ $action = isset($_GET['start']) ? 'start' : (isset($_GET['stop']) ? 'stop' : (is
 $name = isset($_GET['start']) ? $_GET['start'] : (isset($_GET['stop']) ? $_GET['stop'] : (isset($_GET['logs']) ? $_GET['logs'] : (isset($_GET['status']) ? $_GET['status'] : null)));
 
 if (!$action || !$name) {
-    header('Location: container_info.php?name=' . urlencode($name) . '&error=invalid_request');
+    header('Location: ../apps.php?error=invalid_request');
+    exit();
+}
+
+// Check if user has permission to perform this action
+$user_id = $_SESSION['user_id'] ?? null;
+if (!$user_id || !check_container_permission($db, $user_id, $name, $action)) {
+    header('Location: ../apps.php?error=unauthorized');
     exit();
 }
 

@@ -31,7 +31,11 @@ if (!file_exists($dbFile)) {
 
 output("Connecting to database...", 'cli');
 $db = new PDO('sqlite:' . $dbFile);
-    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+// CRITICAL: Enable foreign key constraints in SQLite
+$db->exec('PRAGMA foreign_keys = ON');
+output("Foreign key constraints enabled.", 'cli');
 
     // Create or modify apps table with enhanced fields for container management
     output("Creating apps table...", 'cli');
@@ -39,10 +43,17 @@ $db = new PDO('sqlite:' . $dbFile);
         CREATE TABLE IF NOT EXISTS apps (
             ID INTEGER PRIMARY KEY AUTOINCREMENT, 
             ContainerName TEXT NOT NULL UNIQUE,
+            ContainerID TEXT UNIQUE,
+            Image TEXT DEFAULT '',
             Version TEXT DEFAULT 'latest',
             Status TEXT DEFAULT 'unknown',
             Comment TEXT DEFAULT '',
-            Port TEXT DEFAULT ''
+            Port TEXT DEFAULT '',
+            Url TEXT DEFAULT '',
+            LastPingStatus INTEGER DEFAULT NULL,
+            LastPingTime TEXT DEFAULT NULL,
+            CreatedAt TEXT DEFAULT CURRENT_TIMESTAMP,
+            UpdatedAt TEXT DEFAULT CURRENT_TIMESTAMP
         )";
 
     // Create users table
@@ -75,6 +86,14 @@ $db = new PDO('sqlite:' . $dbFile);
     $db->exec($createAppsTableQuery);
     $db->exec($createUsersTableQuery);
     $db->exec($createContainerPermissionsQuery);
+    
+    // Create indices for better query performance
+    output("Creating database indices...", 'cli');
+    $db->exec('CREATE INDEX IF NOT EXISTS idx_container_permissions_user ON container_permissions(UserID)');
+    $db->exec('CREATE INDEX IF NOT EXISTS idx_container_permissions_container ON container_permissions(ContainerID)');
+    $db->exec('CREATE INDEX IF NOT EXISTS idx_apps_container_id ON apps(ContainerID)');
+    $db->exec('CREATE INDEX IF NOT EXISTS idx_apps_status ON apps(Status)');
+    output("Database indices created.", 'cli');
 
     // Check if default admin user exists, if not create it
     $adminCheckQuery = "SELECT COUNT(*) FROM users WHERE username = 'admin'";
@@ -82,9 +101,9 @@ $db = new PDO('sqlite:' . $dbFile);
     
     if ($adminExists == 0) {
         output("Creating default admin user (admin/pass)...", 'cli');
-        $insertAdminQuery = "INSERT INTO users (username, password, email, IsAdmin) 
-                            VALUES ('admin', '" . password_hash('pass', PASSWORD_DEFAULT) . "', '', 1)";
-        $db->exec($insertAdminQuery);
+        $hashedPassword = password_hash('pass', PASSWORD_DEFAULT);
+        $stmt = $db->prepare("INSERT INTO users (username, password, email, IsAdmin) VALUES (?, ?, ?, ?)");
+        $stmt->execute(['admin', $hashedPassword, '', 1]);
         output("Default admin user created.");
     }
     

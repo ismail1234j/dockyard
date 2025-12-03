@@ -2,10 +2,10 @@
 require_once 'includes/auth.php';
 require_once 'includes/functions.php';
 require_admin(); // This function ensures only admins can access this page
-// The auth.php include already handles authentication, so we can remove the duplicate code
-$db = new PDO('sqlite:data/db.sqlite');
+// The auth.php include already handles authentication and provides $db connection
 $username = $_SESSION['username'];
 ?>
+<!DOCTYPE html>
 <html data-theme="light">
 <head>
     <title>Users</title>
@@ -39,21 +39,28 @@ $username = $_SESSION['username'];
                             <thead>
                             <tr>
                                 <th scope="col">Username</th>
-                                <th scope="col">Delete</th>
+                                <th scope="col">Email</th>
+                                <th scope="col">Admin</th>
+                                <th scope="col">Actions</th>
                             </tr>
                             </thead>
                             <tbody>
                             <?php
-                            $stmt = $db->prepare('SELECT * FROM users');
+                            $stmt = $db->prepare('SELECT * FROM users ORDER BY username');
                             $stmt->execute();
                             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                                 echo '<tr>';
                                 echo '<td>' . htmlspecialchars($row['username']) . '</td>';
+                                echo '<td>' . htmlspecialchars($row['email'] ?? '') . '</td>';
+                                echo '<td>' . ($row['IsAdmin'] ? 'Yes' : 'No') . '</td>';
                                 // Only display the delete icon if the username is not the current user
                                 if ($row['username'] !== $username) {
-                                    echo '<td><i class="fa fa-trash" aria-hidden="true" onclick="deleteUser(\'' . htmlspecialchars($row['username']) . '\')"></i></td>'; // New table data cell for delete icon
+                                    echo '<td>';
+                                    echo '<a href="users/edit.php?id=' . htmlspecialchars($row['ID']) . '" style="margin-right: 10px;" title="Edit user"><i class="fa fa-edit" aria-hidden="true"></i></a>';
+                                    echo '<i class="fa fa-trash" aria-hidden="true" style="cursor: pointer;" onclick="deleteUser(\'' . htmlspecialchars($row['username'], ENT_QUOTES) . '\')" title="Delete user"></i>';
+                                    echo '</td>';
                                 } else {
-                                    echo '<td></td>'; // Empty cell for current user
+                                    echo '<td><a href="users/change_password.php" title="Change password"><i class="fa fa-key" aria-hidden="true"></i></a></td>';
                                 }
                                 echo '</tr>';
                             }
@@ -106,3 +113,4 @@ $username = $_SESSION['username'];
         </div>
     </body>
 <?php endif; ?>
+</html>
