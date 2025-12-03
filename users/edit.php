@@ -32,7 +32,7 @@ try {
 }
 
 // Update user
-if ($auth && $_SERVER["REQUEST_METHOD"] == "POST") {
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Validate CSRF token
     if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
         $error_message = "Security validation failed. Please try again.";
@@ -102,62 +102,42 @@ if ($auth && $_SERVER["REQUEST_METHOD"] == "POST") {
     />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<?php if ($auth && $user_data) : ?>
-    <body>
-    <div class="container" style="margin-top: 6%">
-        <header>
-            <section>
-                <h1>Edit User: <?php echo htmlspecialchars($user_data['username']); ?></h1>
-                <button class="secondary" onclick="location.href='../users.php';">Back</button>
-            </section>
-        </header>
-        <hr />
-        <main>
-            <section>
-                <?php if (!empty($error_message)): ?>
-                    <p style="color: red;"><?php echo htmlspecialchars($error_message); ?></p>
-                <?php endif; ?>
-                <?php if (!empty($success_message)): ?>
-                    <p style="color: green;"><?php echo htmlspecialchars($success_message); ?></p>
-                <?php endif; ?>
-                <div class="overflow-auto">
-                    <form method="post">
-                        <!-- Add CSRF token field -->
-                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
-                        <label for="username">Username</label>
-                        <input type="text" id="username" name="username" value="<?php echo htmlspecialchars($user_data['username']); ?>" required>
-                        <label for="email">Email</label>
-                        <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($user_data['email'] ?? ''); ?>">
-                        <label for="password">New Password (leave blank to keep current)</label>
-                        <input type="password" id="password" name="password" placeholder="Leave blank to keep current password">
-                        <label for="isAdmin" style="padding-bottom: 10px;">
-                            <input type="checkbox" id="isAdmin" name="isAdmin" value="1" <?php echo $user_data['IsAdmin'] ? 'checked' : ''; ?>>
-                            Is Admin?
-                        </label>
-                        <button type="submit">Update User</button>
-                    </form>
-                </div>
-            </section>
-        </main>
-    </div>
-    </body>
-<?php else : ?>
-    <body>
-    <div class="container" style="margin-top: 6%">
-        <header>
-            <section>
-                <h1>Unauthorized</h1>
-            </section>
-        </header>
-        <hr />
-        <main>
-            <section>
-                <div class="overflow-auto">
-                    <p>You are not authorized to view this page.</p>
-                </div>
-            </section>
-        </main>
-    </div>
-    </body>
-<?php endif; ?>
+<body>
+<div class="container" style="margin-top: 6%">
+    <header>
+        <section>
+            <h1>Edit User: <?php echo htmlspecialchars($user_data['username']); ?></h1>
+            <button class="secondary" onclick="location.href='../users.php';">Back</button>
+        </section>
+    </header>
+    <hr />
+    <main>
+        <section>
+            <?php if (!empty($error_message)): ?>
+                <p style="color: red;"><?php echo htmlspecialchars($error_message); ?></p>
+            <?php endif; ?>
+            <?php if (!empty($success_message)): ?>
+                <p style="color: green;"><?php echo htmlspecialchars($success_message); ?></p>
+            <?php endif; ?>
+            <div class="overflow-auto">
+                <form method="post">
+                    <!-- Add CSRF token field -->
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" value="<?php echo htmlspecialchars($user_data['username']); ?>" required>
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($user_data['email'] ?? ''); ?>">
+                    <label for="password">New Password (leave blank to keep current)</label>
+                    <input type="password" id="password" name="password" placeholder="Leave blank to keep current password">
+                    <label for="isAdmin" style="padding-bottom: 10px;">
+                        <input type="checkbox" id="isAdmin" name="isAdmin" value="1" <?php echo $user_data['IsAdmin'] ? 'checked' : ''; ?>>
+                        Is Admin?
+                    </label>
+                    <button type="submit">Update User</button>
+                </form>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
 </html>
