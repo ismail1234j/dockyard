@@ -57,13 +57,11 @@ $canStop = $isAdmin || check_container_permission($db, $user_id, $name, 'stop');
                 </button>
                 <!-- Stop button -->
                 <button class="action-button action-stop" onclick="stopContainer(<?php echo json_encode($name); ?>)" <?php echo $canStop ? '' : 'disabled'; ?>>
-                    <i class="fa fa-stop
-                    "></i> Stop
+                    <i class="fa fa-stop"></i> Stop
                 </button>
                 <!-- Logs button -->
                 <button class="action-button action-logs" onclick="viewLogs()">
-                    <i class="fa fa-file
-                    "></i> View Logs
+                    <i class="fa fa-file"></i> View Logs
                 </button>
             </div>
             <script>

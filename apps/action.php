@@ -13,7 +13,7 @@ $action = isset($_GET['start']) ? 'start' : (isset($_GET['stop']) ? 'stop' : (is
 $name = isset($_GET['start']) ? $_GET['start'] : (isset($_GET['stop']) ? $_GET['stop'] : (isset($_GET['logs']) ? $_GET['logs'] : (isset($_GET['status']) ? $_GET['status'] : null)));
 
 if (!$action || !$name) {
-    header('Location: container_info.php?name=' . urlencode($name) . '&error=invalid_request');
+    header('Location: ../apps.php?error=invalid_request');
     exit();
 }
 
