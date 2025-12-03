@@ -19,6 +19,8 @@ require_once dirname(__DIR__) . '/includes/docker.php';
 try {
     $db = new PDO('sqlite:' . dirname(__DIR__) . '/data/db.sqlite');
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    // Enable foreign key constraints
+    $db->exec('PRAGMA foreign_keys = ON');
 } catch (PDOException $e) {
     die("Database connection failed: " . $e->getMessage());
 }
@@ -32,6 +34,7 @@ $check_links = isset($_GET['check_links']) && $_GET['check_links'] === 'true';
 // Arrays to track containers in database and Docker
 $updated_containers = array();
 $container_statuses = array();
+$docker_container_ids = array(); // Track Docker container IDs for cleanup
 
 // Function to ping a URL and check if it's available
 function check_url_availability($url) {
@@ -101,33 +104,43 @@ foreach ($containers as $container) {
     $image_name = $image_parts[0];
     $version = isset($image_parts[1]) ? $image_parts[1] : 'latest';
     
+    // Track Docker container IDs for cleanup
+    $docker_container_ids[] = $container_id;
+    
     // Determine container status
     $status = strtolower($container['State']);
     
-    // Get port mappings for URL
+    // Get port mappings for URL and Port field
     $url = "";
+    $port = "";
     $ports = [];
     
     if (isset($container['Ports']) && !empty($container['Ports'])) {
-        foreach ($container['Ports'] as $port) {
-            if (isset($port['PublicPort'])) {
-                $ports[] = "{$docker_ip}:{$port['PublicPort']}";
+        $port_mappings = [];
+        foreach ($container['Ports'] as $port_info) {
+            if (isset($port_info['PublicPort'])) {
+                $port_mappings[] = "{$port_info['PublicPort']}";
+                $ports[] = "{$docker_ip}:{$port_info['PublicPort']}";
                 if (empty($url)) {
-                    $url = "{$docker_ip}:{$port['PublicPort']}";
+                    $url = "{$docker_ip}:{$port_info['PublicPort']}";
                 }
             }
         }
+        $port = implode(', ', $port_mappings);
     }
     
-    // Check if this container already exists in the database
-    $stmt = $db->prepare('SELECT ID, Url FROM apps WHERE ContainerName = :containerName');
-    $stmt->bindParam(':containerName', $container_name, PDO::PARAM_STR);
+    // Check if this container already exists in the database (by ContainerID)
+    $stmt = $db->prepare('SELECT ID, Url FROM apps WHERE ContainerID = :containerId');
+    $stmt->bindParam(':containerId', $container_id, PDO::PARAM_STR);
     $stmt->execute();
     $existing = $stmt->fetch(PDO::FETCH_ASSOC);
     
     if ($existing) {
         // Update existing container record
         try {
+            // Use database transaction for consistency
+            $db->beginTransaction();
+            
             $url = !empty($existing['Url']) ? $existing['Url'] : $url;
             
             // Check URL availability if requested
@@ -140,15 +153,20 @@ foreach ($containers as $container) {
             }
             
             $stmt = $db->prepare('UPDATE apps SET 
+                ContainerName = :containerName,
                 Image = :image, 
                 Version = :version, 
-                Status = :status
+                Status = :status,
+                Port = :port,
+                UpdatedAt = CURRENT_TIMESTAMP
                 ' . ($check_links ? ', LastPingStatus = :pingStatus, LastPingTime = :pingTime' : '') . '
                 WHERE ID = :id');
                 
+            $stmt->bindParam(':containerName', $container_name, PDO::PARAM_STR);
             $stmt->bindParam(':image', $image_name, PDO::PARAM_STR);
             $stmt->bindParam(':version', $version, PDO::PARAM_STR);
             $stmt->bindParam(':status', $status, PDO::PARAM_STR);
+            $stmt->bindParam(':port', $port, PDO::PARAM_STR);
             $stmt->bindParam(':id', $existing['ID'], PDO::PARAM_INT);
             
             if ($check_links) {
@@ -157,10 +175,12 @@ foreach ($containers as $container) {
             }
             
             $stmt->execute();
+            $db->commit();
             
             $updated_containers[] = $container_name;
             $container_statuses[$container_name] = $status;
         } catch (PDOException $e) {
+            $db->rollBack();
             error_log("Database update error: " . $e->getMessage());
         }
     } else {
@@ -168,24 +188,55 @@ foreach ($containers as $container) {
         $comment = "Added automatically by cron job on " . date('Y-m-d H:i:s');
         
         try {
+            // Use database transaction for consistency
+            $db->beginTransaction();
+            
             $stmt = $db->prepare('INSERT INTO apps 
-                (ContainerName, Image, Version, Status, Comment, Url) 
-                VALUES (:containerName, :image, :version, :status, :comment, :url)');
+                (ContainerName, ContainerID, Image, Version, Status, Comment, Url, Port) 
+                VALUES (:containerName, :containerId, :image, :version, :status, :comment, :url, :port)');
                 
             $stmt->bindParam(':containerName', $container_name, PDO::PARAM_STR);
+            $stmt->bindParam(':containerId', $container_id, PDO::PARAM_STR);
             $stmt->bindParam(':image', $image_name, PDO::PARAM_STR);
             $stmt->bindParam(':version', $version, PDO::PARAM_STR);
             $stmt->bindParam(':status', $status, PDO::PARAM_STR);
             $stmt->bindParam(':comment', $comment, PDO::PARAM_STR);
             $stmt->bindParam(':url', $url, PDO::PARAM_STR);
+            $stmt->bindParam(':port', $port, PDO::PARAM_STR);
             $stmt->execute();
+            
+            $db->commit();
             
             $updated_containers[] = $container_name;
             $container_statuses[$container_name] = $status;
         } catch (PDOException $e) {
+            $db->rollBack();
             error_log("Database insert error: " . $e->getMessage());
         }
     }
+}
+
+// Clean up containers that no longer exist in Docker
+// This maintains database consistency and removes orphaned permission records
+try {
+    if (!empty($docker_container_ids)) {
+        $placeholders = implode(',', array_fill(0, count($docker_container_ids), '?'));
+        $stmt = $db->prepare("SELECT ID, ContainerName FROM apps WHERE ContainerID NOT IN ($placeholders) AND ContainerID IS NOT NULL");
+        $stmt->execute($docker_container_ids);
+        $removed_containers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        if (!empty($removed_containers)) {
+            foreach ($removed_containers as $removed) {
+                // Delete will cascade to container_permissions due to foreign key constraint
+                $deleteStmt = $db->prepare('DELETE FROM apps WHERE ID = :id');
+                $deleteStmt->bindParam(':id', $removed['ID'], PDO::PARAM_INT);
+                $deleteStmt->execute();
+                error_log("Removed container from database: " . $removed['ContainerName']);
+            }
+        }
+    }
+} catch (PDOException $e) {
+    error_log("Container cleanup error: " . $e->getMessage());
 }
 
 // Output summary of changes
