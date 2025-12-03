@@ -1,7 +1,13 @@
 <?php
 require_once '../includes/auth.php'; // Use centralized auth
+require_once '../includes/functions.php';
+
 $containerList = shell_exec("bash ../manage_containers.sh list");
 $containers = explode("\n", $containerList);
+
+// Get list of containers user has permission to view
+$user_id = $_SESSION['user_id'] ?? null;
+$allowed_containers = $user_id ? get_user_containers($db, $user_id) : [];
 
 foreach ($containers as $containerInfo) {
     if (empty($containerInfo)) continue;
@@ -12,6 +18,13 @@ foreach ($containers as $containerInfo) {
 
     // Assign variables safely
     $name = htmlspecialchars($parts[0], ENT_QUOTES, 'UTF-8');
+    
+    // Skip containers user doesn't have permission to view (unless admin)
+    $isAdmin = isset($_SESSION['isAdmin']) && $_SESSION['isAdmin'] === true;
+    if (!$isAdmin && !in_array($parts[0], $allowed_containers)) {
+        continue;
+    }
+    
     $status = htmlspecialchars($parts[1], ENT_QUOTES, 'UTF-8');
     $imagePart = $parts[2];
 

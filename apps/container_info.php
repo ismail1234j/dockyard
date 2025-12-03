@@ -10,9 +10,22 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
     header('Location: ../login.php');
     exit();
 }
+
+// Check if user has permission to view this container
+$user_id = $_SESSION['user_id'] ?? null;
+if (!$user_id || !check_container_permission($db, $user_id, $name, 'view')) {
+    header('Location: ../apps.php?error=unauthorized');
+    exit();
+}
+
 // Fetch container status
 $containerStatus = shell_exec("bash ../manage_containers.sh status $name");
 $status = htmlspecialchars($containerStatus, ENT_QUOTES, 'UTF-8');
+
+// Check user permissions for this container
+$isAdmin = isset($_SESSION['isAdmin']) && $_SESSION['isAdmin'] === true;
+$canStart = $isAdmin || check_container_permission($db, $user_id, $name, 'start');
+$canStop = $isAdmin || check_container_permission($db, $user_id, $name, 'stop');
 
 ?>
 
@@ -39,11 +52,11 @@ $status = htmlspecialchars($containerStatus, ENT_QUOTES, 'UTF-8');
             <div class="action-buttons">
                 <button class="secondary" onclick="location.href='../apps.php';">Back</button>
                 <!-- Start button -->
-                <button class="action-button action-start" onclick="startContainer(<?php echo json_encode($name); ?>)">
+                <button class="action-button action-start" onclick="startContainer(<?php echo json_encode($name); ?>)" <?php echo $canStart ? '' : 'disabled'; ?>>
                     <i class="fa fa-play"></i> Start
                 </button>
                 <!-- Stop button -->
-                <button class="action-button action-stop" onclick="stopContainer(<?php echo json_encode($name); ?>)">
+                <button class="action-button action-stop" onclick="stopContainer(<?php echo json_encode($name); ?>)" <?php echo $canStop ? '' : 'disabled'; ?>>
                     <i class="fa fa-stop
                     "></i> Stop
                 </button>

@@ -17,6 +17,13 @@ if (!$action || !$name) {
     exit();
 }
 
+// Check if user has permission to perform this action
+$user_id = $_SESSION['user_id'] ?? null;
+if (!$user_id || !check_container_permission($db, $user_id, $name, $action)) {
+    header('Location: ../apps.php?error=unauthorized');
+    exit();
+}
+
 $escapedName = escapeshellarg($name); // Escape the container name to prevent command injection
 $name = trim($escapedName, "'"); // Remove single quotes added by escapeshellarg()
 $scriptPath = realpath('../manage_containers.sh'); // Get the absolute path to the script
