@@ -15,6 +15,8 @@ $db_path = $root_dir . '/data/db.sqlite'; // Default full path for database
 try {
     $db = new PDO('sqlite:' . $db_path);
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION); // Ensure PDO throws exceptions
+    // Enable foreign key constraints for data integrity
+    $db->exec('PRAGMA foreign_keys = ON');
 } catch (PDOException $e) {
     // Log error: error_log("Database Connection Error: " . $e->getMessage());
     // Display a generic error message and stop execution

@@ -1,5 +1,7 @@
 <?php
 require_once '../includes/auth.php'; // Use centralized auth
+require_once '../includes/functions.php';
+require_admin(); // Ensure only admins can create users
 
 // Add new user
 if ($auth) {
@@ -49,6 +51,7 @@ if ($auth) {
     }
 }
 ?>
+<!DOCTYPE html>
 <html data-theme="light">
 <head>
     <title>New User</title>

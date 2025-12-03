@@ -48,14 +48,11 @@ RUN touch /var/www/html/data/db.sqlite \
     && chmod 777 /var/www/html/data/db.sqlite
 
 # Configure passwordless sudo for docker management scripts
-RUN echo "www-data ALL=(ALL) NOPASSWD: /var/www/html/docker-minecraft.sh" > /etc/sudoers.d/docker-minecraft \
-    && echo "www-data ALL=(ALL) NOPASSWD: /var/www/html/manage_containers.sh" > /etc/sudoers.d/manage-containers \
-    && chmod 0440 /etc/sudoers.d/docker-minecraft \
+RUN echo "www-data ALL=(ALL) NOPASSWD: /var/www/html/manage_containers.sh" > /etc/sudoers.d/manage-containers \
     && chmod 0440 /etc/sudoers.d/manage-containers
 
 # Set proper permissions for executable scripts
-RUN chmod +x /var/www/html/docker-minecraft.sh \
-    && chmod +x /var/www/html/manage_containers.sh \
+RUN chmod +x /var/www/html/manage_containers.sh \
     && chmod +x /var/www/html/extras/entrypoint.sh
 
 # (Optional) Configure Git safe directory
