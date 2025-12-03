@@ -141,7 +141,7 @@ The application uses a cron job to discover and track Docker containers. This jo
 
 2. **Fetch All Containers**
    ```php
-   $containers = docker_request('GET', '/containers/json?all=true');
+   $containers = manage_containers.sh('GET', '/containers/json?all=true');
    ```
    - Retrieves ALL containers (running, stopped, paused)
    - Gets container metadata: ID, name, image, status, ports
