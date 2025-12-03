@@ -5,6 +5,7 @@ session_start();
 try {
     $db = new PDO('sqlite:data/db.sqlite');
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION); // Ensure PDO throws exceptions
+    $db->exec('PRAGMA foreign_keys = ON'); // Enable foreign key constraints
 
     if (!isset($_SESSION['username']) && !isset($_SESSION['authenticated'])){
         if ($_SERVER["REQUEST_METHOD"] == "POST") {
