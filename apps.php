@@ -1,7 +1,6 @@
 <?php
 require_once 'includes/auth.php'; // Use centralized auth
 require_once 'includes/functions.php';
-require_once 'includes/docker.php';
 
 $isAdmin = isset($_SESSION['isAdmin']) && $_SESSION['isAdmin'] === true;
 $user_id = $_SESSION['user_id'] ?? null;
