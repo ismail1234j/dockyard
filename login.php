@@ -41,6 +41,18 @@ try {
                     $_SESSION['user_id'] = $row['ID'];
                     $_SESSION['LAST_ACTIVITY'] = time();
                     
+                    // Store session in database for session management
+                    $sessionId = session_id();
+                    try {
+                        $stmt = $db->prepare('INSERT INTO user_sessions (UserID, SessionID) VALUES (:user_id, :session_id)');
+                        $stmt->bindParam(':user_id', $row['ID'], PDO::PARAM_INT);
+                        $stmt->bindParam(':session_id', $sessionId, PDO::PARAM_STR);
+                        $stmt->execute();
+                    } catch (PDOException $e) {
+                        // Log error but don't block login
+                        error_log("Error storing session: " . $e->getMessage());
+                    }
+                    
                     // Generate and store CSRF token
                     if (!isset($_SESSION['csrf_token'])) {
                         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
