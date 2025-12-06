@@ -65,8 +65,8 @@ function get_user_notifications($db, $userId, $unreadOnly = false, $limit = 50) 
                 FROM notifications n
                 LEFT JOIN apps a ON n.ContainerID = a.ID
                 LEFT JOIN users u ON n.UserID = u.ID
-                LEFT JOIN container_permissions cp ON a.ID = cp.ContainerID AND cp.UserID = :user_id
-                WHERE (n.UserID = :user_id OR (cp.CanView = 1 AND n.UserID IS NULL))
+                LEFT JOIN container_permissions cp ON a.ID = cp.ContainerID AND cp.UserID = :user_id_perm
+                WHERE (n.UserID = :user_id_notif OR (cp.CanView = 1 AND n.UserID IS NULL))
             ';
         }
         
@@ -78,7 +78,8 @@ function get_user_notifications($db, $userId, $unreadOnly = false, $limit = 50) 
         
         $stmt = $db->prepare($sql);
         if (!$isAdmin) {
-            $stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
+            $stmt->bindParam(':user_id_perm', $userId, PDO::PARAM_INT);
+            $stmt->bindParam(':user_id_notif', $userId, PDO::PARAM_INT);
         }
         $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
         $stmt->execute();
@@ -145,11 +146,12 @@ function get_unread_notification_count($db, $userId) {
                 SELECT COUNT(DISTINCT n.ID)
                 FROM notifications n
                 LEFT JOIN apps a ON n.ContainerID = a.ID
-                LEFT JOIN container_permissions cp ON a.ID = cp.ContainerID AND cp.UserID = :user_id
-                WHERE n.IsRead = 0 AND (n.UserID = :user_id OR (cp.CanView = 1 AND n.UserID IS NULL))
+                LEFT JOIN container_permissions cp ON a.ID = cp.ContainerID AND cp.UserID = :user_id_perm
+                WHERE n.IsRead = 0 AND (n.UserID = :user_id_notif OR (cp.CanView = 1 AND n.UserID IS NULL))
             ';
             $stmt = $db->prepare($sql);
-            $stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
+            $stmt->bindParam(':user_id_perm', $userId, PDO::PARAM_INT);
+            $stmt->bindParam(':user_id_notif', $userId, PDO::PARAM_INT);
         }
         
         $stmt->execute();

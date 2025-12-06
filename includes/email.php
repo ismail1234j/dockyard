@@ -3,7 +3,11 @@
  * Email Sender Utility
  * 
  * This file provides email sending functionality for the Dockyard application.
- * Configure your SMTP settings in the configuration section below.
+ * 
+ * IMPORTANT: Before using this in production:
+ * 1. Move SMTP configuration to environment variables or a secure config file
+ * 2. Configure your SMTP server settings below
+ * 3. Never commit SMTP credentials to version control
  * 
  * Usage Example:
  * require_once 'includes/email.php';
@@ -11,14 +15,15 @@
  */
 
 // Email Configuration
-// TODO: Move these to a configuration file or environment variables
-define('SMTP_HOST', 'localhost');
-define('SMTP_PORT', 587);
-define('SMTP_USERNAME', '');
-define('SMTP_PASSWORD', '');
-define('SMTP_FROM_EMAIL', 'noreply@dockyard.local');
-define('SMTP_FROM_NAME', 'Dockyard Container Manager');
-define('SMTP_ENCRYPTION', 'tls'); // 'tls' or 'ssl' or '' for none
+// TODO: Move these to environment variables or a separate configuration file
+// Example: Use getenv('SMTP_HOST') or load from config.php
+define('SMTP_HOST', getenv('SMTP_HOST') ?: 'localhost');
+define('SMTP_PORT', getenv('SMTP_PORT') ?: 587);
+define('SMTP_USERNAME', getenv('SMTP_USERNAME') ?: '');
+define('SMTP_PASSWORD', getenv('SMTP_PASSWORD') ?: '');
+define('SMTP_FROM_EMAIL', getenv('SMTP_FROM_EMAIL') ?: 'noreply@dockyard.local');
+define('SMTP_FROM_NAME', getenv('SMTP_FROM_NAME') ?: 'Dockyard Container Manager');
+define('SMTP_ENCRYPTION', getenv('SMTP_ENCRYPTION') ?: 'tls'); // 'tls' or 'ssl' or '' for none
 
 /**
  * Send an email using PHP's mail() function
