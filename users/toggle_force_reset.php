@@ -51,16 +51,19 @@ try {
     $details = "Force password reset " . ($enabled ? "enabled" : "disabled") . " for user: " . $targetUser['username'];
     
     // If enabling force password reset, invalidate all active sessions for that user
+    $sessionsInvalidated = false;
     if ($enabled) {
         try {
             $stmt = $db->prepare('DELETE FROM user_sessions WHERE UserID = :user_id');
             $stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
             $stmt->execute();
+            $sessionsInvalidated = true;
             
             // Add session invalidation to details
             $details .= " - All active sessions invalidated";
         } catch (PDOException $e) {
             error_log("Error invalidating sessions: " . $e->getMessage());
+            $details .= " - Warning: Could not invalidate sessions";
         }
     }
     
@@ -70,7 +73,7 @@ try {
     log_admin_action($db, $adminUserId, $userId, $action, $details);
     
     $message = $enabled 
-        ? "Force password reset enabled for " . $targetUser['username'] . ". User has been logged out."
+        ? "Force password reset enabled for " . $targetUser['username'] . ($sessionsInvalidated ? ". User has been logged out." : ". Note: Could not log out user automatically.")
         : "Force password reset disabled for " . $targetUser['username'];
     
     echo json_encode(['success' => true, 'message' => $message]);
