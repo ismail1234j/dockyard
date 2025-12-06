@@ -34,30 +34,38 @@ if (!$scriptPath || !file_exists($scriptPath)) {
 }
 
 // Execute the appropriate action
+$output = '';
+$success = false;
+
 switch ($action) {
     case 'start':
-        shell_exec("bash $scriptPath start $escapedName 2>&1");
+        $output = shell_exec("bash $scriptPath start $escapedName 2>&1");
+        $success = strpos($output, $name) !== false || empty(trim($output));
         break;
 
     case 'stop':
-        shell_exec("bash $scriptPath stop $escapedName 2>&1");
+        $output = shell_exec("bash $scriptPath stop $escapedName 2>&1");
+        $success = strpos($output, $name) !== false || empty(trim($output));
         break;
 
     case 'logs':
         $lines = isset($_GET['lines']) ? intval($_GET['lines']) : 30; // Default to 30 lines
-        shell_exec("bash $scriptPath logs $escapedName $lines 2>&1");
-        break;
+        $output = shell_exec("bash $scriptPath logs $escapedName $lines 2>&1");
+        echo $output;
+        exit();
 
     case 'status':
-        shell_exec("bash $scriptPath status $escapedName 2>&1");
-        break;
+        $output = shell_exec("bash $scriptPath status $escapedName 2>&1");
+        echo $output;
+        exit();
 
     default:
         header('Location: container_info.php?name=' . urlencode($name) . '&error=invalid_action');
         exit();
 }
 
-// Redirect back to container_info.php
-header('Location: container_info.php?name=' . urlencode($name));
+// For start/stop actions, redirect back with status
+$status = $success ? 'success' : 'error';
+header('Location: container_info.php?name=' . urlencode($name) . '&action_status=' . $status . '&action_type=' . $action);
 exit();
 ?>
