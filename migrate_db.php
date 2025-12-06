@@ -69,12 +69,28 @@ try {
     ");
     echo "✓ Admin actions log table created\n";
     
+    // Create user sessions table for tracking active sessions
+    echo "Creating user_sessions table...\n";
+    $db->exec("
+        CREATE TABLE IF NOT EXISTS user_sessions (
+            ID INTEGER PRIMARY KEY AUTOINCREMENT,
+            UserID INTEGER NOT NULL,
+            SessionID TEXT NOT NULL UNIQUE,
+            CreatedAt TEXT DEFAULT CURRENT_TIMESTAMP,
+            LastActivity TEXT DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (UserID) REFERENCES users(ID) ON DELETE CASCADE
+        )
+    ");
+    echo "✓ User sessions table created\n";
+    
     // Create indices for performance
     echo "Creating database indices...\n";
     $db->exec('CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(UserID)');
     $db->exec('CREATE INDEX IF NOT EXISTS idx_notifications_read ON notifications(IsRead)');
     $db->exec('CREATE INDEX IF NOT EXISTS idx_admin_log_admin ON admin_actions_log(AdminUserID)');
     $db->exec('CREATE INDEX IF NOT EXISTS idx_admin_log_target ON admin_actions_log(TargetUserID)');
+    $db->exec('CREATE INDEX IF NOT EXISTS idx_user_sessions_user ON user_sessions(UserID)');
+    $db->exec('CREATE INDEX IF NOT EXISTS idx_user_sessions_session ON user_sessions(SessionID)');
     echo "✓ Database indices created\n";
     
     echo "\nMigration completed successfully!\n";

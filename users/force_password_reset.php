@@ -131,9 +131,23 @@ if (!isset($_SESSION['csrf_token'])) {
         .password-requirements ul {
             margin: 0;
             padding-left: 1.5rem;
+            list-style: none;
         }
         .password-requirements li {
             margin-bottom: 0.25rem;
+            position: relative;
+            padding-left: 1.5rem;
+        }
+        .password-requirements li::before {
+            content: '✕';
+            position: absolute;
+            left: 0;
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .password-requirements li.valid::before {
+            content: '✓';
+            color: #28a745;
         }
         .session-warning {
             background-color: #fff3cd;
@@ -164,11 +178,11 @@ if (!isset($_SESSION['csrf_token'])) {
         <div class="password-requirements">
             <h4>Password Requirements:</h4>
             <ul>
-                <li>Minimum 8 characters long</li>
-                <li>At least one uppercase letter (A-Z)</li>
-                <li>At least one lowercase letter (a-z)</li>
-                <li>At least one number (0-9)</li>
-                <li>At least one special character (!@#$%^&*)</li>
+                <li id="req-length">Minimum 8 characters long</li>
+                <li id="req-uppercase">At least one uppercase letter (A-Z)</li>
+                <li id="req-lowercase">At least one lowercase letter (a-z)</li>
+                <li id="req-number">At least one number (0-9)</li>
+                <li id="req-special">At least one special character (!@#$%^&*)</li>
             </ul>
         </div>
         
@@ -226,7 +240,12 @@ if (!isset($_SESSION['csrf_token'])) {
                 special: /[^A-Za-z0-9]/.test(password)
             };
             
-            // You could add visual feedback here
+            // Update visual indicators
+            document.getElementById('req-length').classList.toggle('valid', requirements.length);
+            document.getElementById('req-uppercase').classList.toggle('valid', requirements.uppercase);
+            document.getElementById('req-lowercase').classList.toggle('valid', requirements.lowercase);
+            document.getElementById('req-number').classList.toggle('valid', requirements.number);
+            document.getElementById('req-special').classList.toggle('valid', requirements.special);
         });
         
         // Prevent form submission if passwords don't match
