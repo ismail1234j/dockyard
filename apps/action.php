@@ -25,7 +25,6 @@ if (!$user_id || !check_container_permission($db, $user_id, $name, $action)) {
 }
 
 $escapedName = escapeshellarg($name); // Escape the container name to prevent command injection
-$name = trim($escapedName, "'"); // Remove single quotes added by escapeshellarg()
 $scriptPath = realpath('../manage_containers.sh'); // Get the absolute path to the script
 
 if (!$scriptPath || !file_exists($scriptPath)) {
