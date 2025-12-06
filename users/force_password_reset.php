@@ -195,10 +195,25 @@ if (!isset($_SESSION['csrf_token'])) {
     
     <script>
         // Auto-logout after 5 minutes
-        setTimeout(function() {
-            alert('Your session has expired. Please login again.');
-            window.location.href = '../logout.php';
-        }, 300000); // 5 minutes
+        let timeRemaining = 300; // 5 minutes in seconds
+        const warningTime = 60; // Show warning at 1 minute
+        
+        const countdownInterval = setInterval(function() {
+            timeRemaining--;
+            
+            if (timeRemaining === warningTime) {
+                // Show warning at 1 minute remaining
+                const warning = document.createElement('div');
+                warning.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #ffc107; color: #000; padding: 15px; border-radius: 8px; z-index: 10000;';
+                warning.textContent = 'Session will expire in 1 minute. Please complete password reset.';
+                document.body.appendChild(warning);
+            }
+            
+            if (timeRemaining <= 0) {
+                clearInterval(countdownInterval);
+                window.location.href = '../logout.php?reason=session_expired';
+            }
+        }, 1000);
         
         // Show real-time password validation
         document.getElementById('new_password').addEventListener('input', function(e) {

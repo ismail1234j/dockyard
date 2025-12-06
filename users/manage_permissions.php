@@ -243,11 +243,11 @@ try {
                                     <td><?= $perm['CanStart'] ? '✓' : '✕' ?></td>
                                     <td><?= $perm['CanStop'] ? '✓' : '✕' ?></td>
                                     <td>
-                                        <form method="post" style="margin: 0" onsubmit="return confirm('Are you sure you want to delete this permission?');">
+                                        <form method="post" style="margin: 0">
                                             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
                                             <input type="hidden" name="action" value="delete_permission">
                                             <input type="hidden" name="permission_id" value="<?= htmlspecialchars($perm['ID']) ?>">
-                                            <button type="submit" class="pico-background-red-500" style="padding: 0.25rem 0.5rem;">Delete</button>
+                                            <button type="submit" class="pico-background-red-500" style="padding: 0.25rem 0.5rem;" onclick="return confirmDelete(event)">Delete</button>
                                         </form>
                                     </td>
                                 </tr>
@@ -264,5 +264,15 @@ try {
             </section>
         </footer>
     </div>
+    
+    <script>
+        function confirmDelete(event) {
+            if (!confirm('Are you sure you want to delete this permission?')) {
+                event.preventDefault();
+                return false;
+            }
+            return true;
+        }
+    </script>
 </body>
 </html>

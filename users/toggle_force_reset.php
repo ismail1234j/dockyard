@@ -23,8 +23,14 @@ if (!isset($_POST['user_id']) || !isset($_POST['enabled'])) {
 $userId = intval($_POST['user_id']);
 $enabled = $_POST['enabled'] === '1' ? 1 : 0;
 
+// Validate user_id is positive
+if ($userId <= 0) {
+    echo json_encode(['success' => false, 'message' => 'Invalid user ID']);
+    exit;
+}
+
 try {
-    // Get target user info
+    // Get target user info and verify user exists
     $stmt = $db->prepare('SELECT username FROM users WHERE ID = :id');
     $stmt->bindParam(':id', $userId, PDO::PARAM_INT);
     $stmt->execute();

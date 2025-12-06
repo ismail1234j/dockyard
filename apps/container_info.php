@@ -309,8 +309,12 @@ $canStop = $isAdmin || check_container_permission($db, $user_id, $name, 'stop');
             window.addEventListener('DOMContentLoaded', function() {
                 refreshLogs();
                 
-                // Auto-refresh logs every 10 seconds
-                setInterval(refreshLogs, 10000);
+                // Auto-refresh logs every 30 seconds (configurable)
+                // To disable auto-refresh, comment out the line below
+                const autoRefreshInterval = 30000; // 30 seconds
+                if (autoRefreshInterval > 0) {
+                    setInterval(refreshLogs, autoRefreshInterval);
+                }
             });
         </script>
     </body>
