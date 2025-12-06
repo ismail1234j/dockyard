@@ -47,11 +47,8 @@ try {
     $stmt->bindParam(':id', $userId, PDO::PARAM_INT);
     $stmt->execute();
     
-    // Log admin action
-    $adminUserId = $_SESSION['user_id'];
-    $action = $enabled ? 'ENABLE_FORCE_PASSWORD_RESET' : 'DISABLE_FORCE_PASSWORD_RESET';
+    // Build details message
     $details = "Force password reset " . ($enabled ? "enabled" : "disabled") . " for user: " . $targetUser['username'];
-    log_admin_action($db, $adminUserId, $userId, $action, $details);
     
     // If enabling force password reset, invalidate all active sessions for that user
     if ($enabled) {
@@ -60,12 +57,17 @@ try {
             $stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
             $stmt->execute();
             
-            // Log the session invalidation
+            // Add session invalidation to details
             $details .= " - All active sessions invalidated";
         } catch (PDOException $e) {
             error_log("Error invalidating sessions: " . $e->getMessage());
         }
     }
+    
+    // Log admin action with complete details
+    $adminUserId = $_SESSION['user_id'];
+    $action = $enabled ? 'ENABLE_FORCE_PASSWORD_RESET' : 'DISABLE_FORCE_PASSWORD_RESET';
+    log_admin_action($db, $adminUserId, $userId, $action, $details);
     
     $message = $enabled 
         ? "Force password reset enabled for " . $targetUser['username'] . ". User has been logged out."
