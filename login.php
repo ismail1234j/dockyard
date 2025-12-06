@@ -16,6 +16,25 @@ try {
             $stmt->execute();
             if ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                 if (password_verify($password, $row['password'])) {
+                    // Check if force password reset is required
+                    $forceReset = isset($row['force_password_reset']) && $row['force_password_reset'] == 1;
+                    
+                    if ($forceReset) {
+                        // Create a temporary restricted session
+                        $_SESSION['temp_user_id'] = $row['ID'];
+                        $_SESSION['temp_username'] = $username;
+                        $_SESSION['force_reset_session'] = true;
+                        $_SESSION['force_reset_time'] = time();
+                        
+                        // Generate and store CSRF token
+                        if (!isset($_SESSION['csrf_token'])) {
+                            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+                        }
+                        
+                        header('Location: users/force_password_reset.php');
+                        exit;
+                    }
+                    
                     $_SESSION['username'] = $username;
                     $_SESSION['authenticated'] = true;
                     $_SESSION['isAdmin'] = (bool)$row['IsAdmin'];
