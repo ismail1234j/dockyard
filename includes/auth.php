@@ -36,6 +36,17 @@ if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > 
 }
 $_SESSION['LAST_ACTIVITY'] = time(); // update last activity time stamp
 
+// Check for force reset session - redirect to force reset page if active
+if (isset($_SESSION['force_reset_session']) && $_SESSION['force_reset_session'] === true) {
+    // Allow access only to force_password_reset.php and logout.php
+    $currentPage = basename($_SERVER['PHP_SELF']);
+    if ($currentPage !== 'force_password_reset.php' && $currentPage !== 'logout.php') {
+        $resetPath = (strpos($_SERVER['PHP_SELF'], '/apps/') !== false || strpos($_SERVER['PHP_SELF'], '/users/') !== false) ? '../users/force_password_reset.php' : 'users/force_password_reset.php';
+        header('Location: ' . $resetPath);
+        exit;
+    }
+}
+
 // CSRF token check for POST requests
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['csrf_token'])) {
     // Skip CSRF check for the login form itself

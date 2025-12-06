@@ -11,6 +11,8 @@
  * - Set check_links=true to test container URLs
  */
 
+require_once dirname(__DIR__) . '/includes/notifications.php';
+
 // Path to the container management script
 $scriptPath = dirname(__DIR__) . '/manage_containers.sh';
 
@@ -200,6 +202,19 @@ foreach ($containers as $container) {
             
             $updated_containers[] = $container_name;
             $container_statuses[$container_name] = $status;
+            
+            // Create notification if container status is error/exited
+            if ($status === 'exited' || $status === 'unknown') {
+                // Get container ID from database
+                $containerIdInDb = $existing['ID'];
+                create_notification(
+                    $db, 
+                    null, // null means all users with permissions will see it
+                    $containerIdInDb, 
+                    'error', 
+                    "Container '$container_name' is in $status state"
+                );
+            }
         } catch (PDOException $e) {
             $db->rollBack();
             error_log("Database update error: " . $e->getMessage());
@@ -230,6 +245,15 @@ foreach ($containers as $container) {
             
             $updated_containers[] = $container_name;
             $container_statuses[$container_name] = $status;
+            
+            // Create notification for new container
+            create_notification(
+                $db,
+                null, // null for admin notification
+                $db->lastInsertId(),
+                'info',
+                "New container '$container_name' detected"
+            );
         } catch (PDOException $e) {
             $db->rollBack();
             error_log("Database insert error: " . $e->getMessage());
