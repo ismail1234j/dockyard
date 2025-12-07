@@ -38,6 +38,7 @@
         border-radius: 8px;
         box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         width: 350px;
+        max-width: calc(100vw - 20px);
         max-height: 400px;
         overflow-y: auto;
         z-index: 1000;
@@ -45,6 +46,19 @@
     
     .notification-dropdown.show {
         display: block;
+    }
+    
+    /* Ensure the notification bell container has proper positioning */
+    .notification-bell {
+        position: relative;
+    }
+    
+    /* Adjust for mobile screens */
+    @media (max-width: 768px) {
+        .notification-dropdown {
+            right: -10px;
+            width: 300px;
+        }
     }
     
     .notification-header {
