@@ -28,6 +28,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get update && apt-get install -y --no-install-recommends docker-ce-cli \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+    && sudo apt-get install -y dos2unix
 
 # Enable Apache rewrite module
 RUN a2enmod rewrite
@@ -62,6 +63,10 @@ RUN chmod +x /usr/local/bin/entrypoint.sh
 
 # Expose HTTP port
 EXPOSE 80
+
+# Make scripts use Unix line endings
+RUN dos2unix /var/www/html/manage_containers.sh \
+    && dos2unix /usr/local/bin/entrypoint.sh
 
 # Start Apache
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
