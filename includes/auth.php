@@ -1,6 +1,9 @@
 <?php
 session_start();
 
+// Include security headers
+require_once __DIR__ . '/security_headers.php';
+
 /*
 if (isset($_SERVER['SERVER_SOFTWARE']) && stripos($_SERVER['SERVER_SOFTWARE'], 'LiteSpeed') == false) {
     // Running under OpenLiteSpeed or LiteSpeed

@@ -28,6 +28,12 @@ switch ($action) {
         break;
         
     case 'mark_read':
+        // Validate CSRF token for POST requests
+        if (!isset($_SESSION['csrf_token'])) {
+            echo json_encode(['success' => false, 'message' => 'Security validation failed']);
+            exit;
+        }
+        
         if (!isset($_POST['notification_id'])) {
             echo json_encode(['success' => false, 'message' => 'Missing notification ID']);
             exit;
@@ -38,6 +44,12 @@ switch ($action) {
         break;
         
     case 'mark_all_read':
+        // Validate CSRF token for POST requests
+        if (!isset($_SESSION['csrf_token'])) {
+            echo json_encode(['success' => false, 'message' => 'Security validation failed']);
+            exit;
+        }
+        
         $success = mark_all_notifications_read($db, $userId);
         echo json_encode(['success' => $success]);
         break;
