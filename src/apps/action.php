@@ -2,17 +2,12 @@
 include_once '../includes/auth.php'; // Use centralized auth
 include_once '../includes/functions.php';
 
-// Check if the user is authenticated
-if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
-    header('Location: ../login.php');
-    exit();
-}
+$action = $_GET['action'] ?? null;
+$name   = $_GET['name'] ?? null;
 
-// Validate and sanitize input
-$action = isset($_GET['start']) ? 'start' : (isset($_GET['stop']) ? 'stop' : (isset($_GET['logs']) ? 'logs' : (isset($_GET['status']) ? 'status' : null)));
-$name = isset($_GET['start']) ? $_GET['start'] : (isset($_GET['stop']) ? $_GET['stop'] : (isset($_GET['logs']) ? $_GET['logs'] : (isset($_GET['status']) ? $_GET['status'] : null)));
+$allowedActions = ['start', 'stop', 'logs', 'status'];
 
-if (!$action || !$name) {
+if (!in_array($action, $allowedActions, true) || empty($name)) {
     header('Location: ../apps.php?error=invalid_request');
     exit();
 }
@@ -24,8 +19,14 @@ if (!$user_id || !check_container_permission($db, $user_id, $name, $action)) {
     exit();
 }
 
-$escapedName = escapeshellarg($name); // Escape the container name to prevent command injection
-$scriptPath = realpath('../manage_containers.sh'); // Get the absolute path to the script
+if (!preg_match('/^[a-zA-Z0-9_.-]{1,64}$/', $name)) {
+    header('Location: ../apps.php?error=invalid_container');
+    exit();
+}
+
+$escapedName = escapeshellarg($name);
+
+$scriptPath = realpath('../private/manage_containers.sh');
 
 if (!$scriptPath || !file_exists($scriptPath)) {
     header('Location: container_info.php?name=' . urlencode($name) . '&error=script_not_found');
@@ -48,8 +49,10 @@ switch ($action) {
         break;
 
     case 'logs':
-        $lines = isset($_GET['lines']) ? intval($_GET['lines']) : 30; // Default to 30 lines
+        $lines = isset($_GET['lines']) ? intval($_GET['lines']) : 30;
+        $lines = max(1, min($lines, 500));
         $output = shell_exec("bash $scriptPath logs $escapedName $lines 2>&1");
+        header('Content-Type: text/plain; charset=UTF-8');
         echo $output;
         exit();
 
