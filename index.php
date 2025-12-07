@@ -2,10 +2,12 @@
 // Remove duplicate session management and use centralized auth
 require_once 'includes/auth.php';
 ?>
+<!DOCTYPE html>
 <html data-theme="light">
     <head>
         <title>Home</title>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.orange.min.css"/>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
     </head>
     <?php if ($auth) : ?>
@@ -14,7 +16,10 @@ require_once 'includes/auth.php';
 <header>
 <section>
 <h1>You are logged in: <?php echo htmlspecialchars($_SESSION['username']); ?></h1>
-<a href="logout.php">Log Out</a>
+<div style="display: flex; gap: 10px; align-items: center;">
+    <?php include 'includes/notification_widget.php'; ?>
+    <a href="logout.php">Log Out</a>
+</div>
 </section>
 </header>
 <hr />
