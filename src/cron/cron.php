@@ -14,8 +14,7 @@
 require_once dirname(__DIR__) . '/includes/notifications.php';
 
 // Path to the container management script
-$scriptPath = dirname(__DIR__) . '/manage_containers.sh';
-
+$scriptPath = dirname(__DIR__) . '/private/manage_containers.sh';
 if (!file_exists($scriptPath)) {
     die("Error: manage_containers.sh not found at: $scriptPath");
 }

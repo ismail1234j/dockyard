@@ -19,7 +19,7 @@ if (!$user_id || !check_container_permission($db, $user_id, $name, 'view')) {
 }
 
 // Fetch container status
-$containerStatus = shell_exec("bash ../manage_containers.sh status $name");
+$containerStatus = shell_exec("bash ../private/manage_containers.sh status $name");
 $status = htmlspecialchars($containerStatus, ENT_QUOTES, 'UTF-8');
 
 // Check user permissions for this container
