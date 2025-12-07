@@ -4,15 +4,28 @@
 DOCKER_BIN="/usr/bin/docker"
 LOG_FILE="/var/www/html/logs/container_operations.log"
 
-# User executing this command
-EXEC_USER=$(whoami)
-TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+# Verify Docker binary exists and is executable
+if [[ ! -x "$DOCKER_BIN" ]]; then
+    echo "Docker binary not found or not executable"
+    exit 1
+fi
 
 log_action() {
-    echo "$TIMESTAMP | USER=$EXEC_USER | CONTAINER=$2 | ACTION=$1 | RESULT=$3" >> "$LOG_FILE"
+    local ACTION="$1"
+    local CONTAINER="$2"
+    local RESULT="$3"
+    local EXEC_USER
+    local TIMESTAMP
+
+    EXEC_USER=$(whoami)
+    TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+
+    # Ensure log path exists BEFORE writing
     mkdir -p "$(dirname "$LOG_FILE")"
     touch "$LOG_FILE"
-    chmod 666 "$LOG_FILE"
+    chmod 640 "$LOG_FILE"
+
+    echo "$TIMESTAMP | USER=$EXEC_USER | CONTAINER=$CONTAINER | ACTION=$ACTION | RESULT=$RESULT" >> "$LOG_FILE"
 }
 
 # Function to validate container name to prevent command injection
@@ -26,6 +39,12 @@ validate_container_name() {
 case "$1" in
     start)
         CONTAINER_NAME="$2"
+
+        if [[ -z "$CONTAINER_NAME" ]]; then
+            echo "Container name required"
+            exit 1
+        fi
+
         validate_container_name "$CONTAINER_NAME"
         RESULT=$($DOCKER_BIN start "$CONTAINER_NAME" 2>&1)
         STATUS=$?
@@ -35,6 +54,12 @@ case "$1" in
         ;;
     stop)
         CONTAINER_NAME="$2"
+
+        if [[ -z "$CONTAINER_NAME" ]]; then
+            echo "Container name required"
+            exit 1
+        fi
+
         validate_container_name "$CONTAINER_NAME"
         RESULT=$($DOCKER_BIN stop "$CONTAINER_NAME" 2>&1)
         STATUS=$?
@@ -44,6 +69,12 @@ case "$1" in
         ;;
     status)
         CONTAINER_NAME="$2"
+
+        if [[ -z "$CONTAINER_NAME" ]]; then
+            echo "Container name required"
+            exit 1
+        fi
+
         validate_container_name "$CONTAINER_NAME"
         RESULT=$($DOCKER_BIN inspect -f '{{.State.Status}}' "$CONTAINER_NAME" 2>&1)
         STATUS=$?
@@ -53,10 +84,27 @@ case "$1" in
         ;;
     logs)
         CONTAINER_NAME="$2"
+
+        if [[ -z "$CONTAINER_NAME" ]]; then
+            echo "Container name required"
+            exit 1
+        fi
+
         validate_container_name "$CONTAINER_NAME"
-        LINES=${3:-30}  # Default to 30 lines if not specified
-        RESULT=$($DOCKER_BIN logs "$CONTAINER_NAME" 2>&1 | tail -n "$LINES")
+
+        LINES=${3:-30}
+
+        # Enforce numeric-only log line input
+        if ! [[ "$LINES" =~ ^[0-9]+$ ]]; then
+            echo "Invalid log line count"
+            exit 1
+        fi
+
+        FULL_LOGS=$($DOCKER_BIN logs "$CONTAINER_NAME" 2>&1)
         STATUS=$?
+
+        RESULT=$(echo "$FULL_LOGS" | tail -n "$LINES")
+
         log_action "LOGS" "$CONTAINER_NAME" "Retrieved last $LINES lines"
         echo "$RESULT"
         exit $STATUS

@@ -5,7 +5,7 @@ FROM php:8.1-apache-bullseye
 WORKDIR /var/www/html
 
 # Copy application files
-COPY --chown=www-data:www-data . /var/www/html/
+COPY --chown=www-data:www-data /src /var/www/html/
 RUN chmod -R 777 /var/www/html
 
 # Install system dependencies, PHP extensions, and Docker CLI
@@ -23,7 +23,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libicu-dev \
     sqlite3 \
     && docker-php-ext-install pdo pdo_sqlite intl \
-    # Install Docker CLI
     && curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg \
     && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list \
     && apt-get update && apt-get install -y --no-install-recommends docker-ce-cli \
@@ -55,11 +54,10 @@ RUN echo "www-data ALL=(ALL) NOPASSWD: /var/www/html/manage_containers.sh" > /et
 RUN chmod +x /var/www/html/manage_containers.sh \
     && chmod +x /var/www/html/extras/entrypoint.sh
 
-# (Optional) Configure Git safe directory
 RUN git config --global --add safe.directory /var/www/html
 
 # Copy entrypoint script to proper location and make it executable
-COPY extras/entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
 # Expose HTTP port
