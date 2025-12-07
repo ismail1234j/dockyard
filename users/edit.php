@@ -45,7 +45,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Validate inputs
         if (empty($username)) {
             $error_message = "Username is required.";
-        } else {
+        } elseif (!empty($email) && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $error_message = "Invalid email address format.";
+        } elseif (!empty($new_password)) {
+            // Validate new password if provided
+            if (strlen($new_password) < 8) {
+                $error_message = "Password must be at least 8 characters long.";
+            } elseif (!preg_match('/[A-Z]/', $new_password)) {
+                $error_message = "Password must contain at least one uppercase letter.";
+            } elseif (!preg_match('/[a-z]/', $new_password)) {
+                $error_message = "Password must contain at least one lowercase letter.";
+            } elseif (!preg_match('/[0-9]/', $new_password)) {
+                $error_message = "Password must contain at least one number.";
+            } elseif (!preg_match('/[^A-Za-z0-9]/', $new_password)) {
+                $error_message = "Password must contain at least one special character.";
+            }
+        }
+        
+        if (empty($error_message)) {
             try {
                 // Check if username already exists for a different user
                 $stmtCheck = $db->prepare('SELECT ID FROM users WHERE username = :username AND ID != :id');

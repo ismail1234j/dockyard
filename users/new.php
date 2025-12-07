@@ -18,6 +18,18 @@ if ($auth) {
             // Validate inputs (basic example)
             if (empty($username) || empty($password)) {
                 $error_message = "Username and password are required.";
+            } elseif (strlen($password) < 8) {
+                $error_message = "Password must be at least 8 characters long.";
+            } elseif (!preg_match('/[A-Z]/', $password)) {
+                $error_message = "Password must contain at least one uppercase letter.";
+            } elseif (!preg_match('/[a-z]/', $password)) {
+                $error_message = "Password must contain at least one lowercase letter.";
+            } elseif (!preg_match('/[0-9]/', $password)) {
+                $error_message = "Password must contain at least one number.";
+            } elseif (!preg_match('/[^A-Za-z0-9]/', $password)) {
+                $error_message = "Password must contain at least one special character.";
+            } elseif (!empty($email) && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $error_message = "Invalid email address format.";
             } else {
                 try {
                     // Check if username already exists

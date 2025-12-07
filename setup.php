@@ -126,11 +126,25 @@ output("Foreign key constraints enabled.", 'cli');
             ID INTEGER PRIMARY KEY AUTOINCREMENT,
             UserID INTEGER NOT NULL,
             SessionID TEXT NOT NULL UNIQUE,
+            IPAddress TEXT,
+            UserAgent TEXT,
             CreatedAt TEXT DEFAULT CURRENT_TIMESTAMP,
             LastActivity TEXT DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (UserID) REFERENCES users(ID) ON DELETE CASCADE
         )";
     $db->exec($createUserSessionsTableQuery);
+    
+    // Create failed login attempts table for rate limiting
+    output("Creating failed_login_attempts table...", 'cli');
+    $createFailedLoginAttemptsQuery = "
+        CREATE TABLE IF NOT EXISTS failed_login_attempts (
+            ID INTEGER PRIMARY KEY AUTOINCREMENT,
+            Username TEXT NOT NULL,
+            IPAddress TEXT NOT NULL,
+            AttemptTime TEXT DEFAULT CURRENT_TIMESTAMP,
+            Success BOOLEAN NOT NULL DEFAULT 0
+        )";
+    $db->exec($createFailedLoginAttemptsQuery);
     
     // Create indices for better query performance
     output("Creating database indices...", 'cli');
@@ -144,6 +158,9 @@ output("Foreign key constraints enabled.", 'cli');
     $db->exec('CREATE INDEX IF NOT EXISTS idx_admin_log_target ON admin_actions_log(TargetUserID)');
     $db->exec('CREATE INDEX IF NOT EXISTS idx_user_sessions_user ON user_sessions(UserID)');
     $db->exec('CREATE INDEX IF NOT EXISTS idx_user_sessions_session ON user_sessions(SessionID)');
+    $db->exec('CREATE INDEX IF NOT EXISTS idx_failed_login_username ON failed_login_attempts(Username)');
+    $db->exec('CREATE INDEX IF NOT EXISTS idx_failed_login_ip ON failed_login_attempts(IPAddress)');
+    $db->exec('CREATE INDEX IF NOT EXISTS idx_failed_login_time ON failed_login_attempts(AttemptTime)');
     output("Database indices created.", 'cli');
 
     // Check if default admin user exists, if not create it
