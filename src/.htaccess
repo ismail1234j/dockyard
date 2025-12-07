@@ -1,0 +1,9 @@
+RewriteEngine On
+
+# Do not rewrite existing files or directories
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+
+# Rewrite extensionless URLs to .php
+RewriteRule ^([a-zA-Z0-9_-]+)$ $1.php [L,QSA]
+
