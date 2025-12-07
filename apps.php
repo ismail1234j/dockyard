@@ -1,7 +1,6 @@
 <?php
 require_once 'includes/auth.php'; // Use centralized auth
 require_once 'includes/functions.php';
-require_once 'includes/docker.php';
 
 $isAdmin = isset($_SESSION['isAdmin']) && $_SESSION['isAdmin'] === true;
 $user_id = $_SESSION['user_id'] ?? null;
@@ -55,7 +54,8 @@ if (isset($_GET['info'])) {
     <header>
       <section>
         <h1>Container Manager</h1>
-        <div class="">
+        <div class="" style="display: flex; gap: 10px; align-items: center;">
+          <?php include 'includes/notification_widget.php'; ?>
           <button class="secondary" onclick="location.href='index.php';">Back</button>
           <?php if ($isAdmin): ?>
             <button class="pico-background-amber-200" onclick="location.href='permissions.php';">Manage Permissions</button>
@@ -111,7 +111,7 @@ if (isset($_GET['info'])) {
     </footer>
   </div>
   
-  <script>window.csrfToken = '<?php echo $_SESSION['csrf_token'] ?? ''; ?>';</script>
+  <script>window.csrfToken = <?php echo json_encode($_SESSION['csrf_token'] ?? ''); ?>;</script>
   <script src="includes/functions.js"></script>
   <script>refreshTable();</script>
 </body>

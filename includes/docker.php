@@ -1,4 +1,15 @@
 <?php
+/**
+ * DEPRECATED: This file is not actively used in the application.
+ * 
+ * The application uses manage_containers.sh bash script for Docker operations instead.
+ * This file remains for reference or future migration purposes.
+ * 
+ * Current implementation:
+ * - Container management: manage_containers.sh (bash script)
+ * - Container sync: cron/cron.php uses manage_containers.sh
+ * - Container actions: apps/action.php uses manage_containers.sh
+ */
 
 function docker_request(string $method, string $endpoint, ?array $body = null): array
 {

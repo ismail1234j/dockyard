@@ -1,6 +1,9 @@
 <?php
 session_start();
 
+// Include security headers
+require_once __DIR__ . '/security_headers.php';
+
 /*
 if (isset($_SERVER['SERVER_SOFTWARE']) && stripos($_SERVER['SERVER_SOFTWARE'], 'LiteSpeed') == false) {
     // Running under OpenLiteSpeed or LiteSpeed
@@ -15,6 +18,8 @@ $db_path = $root_dir . '/data/db.sqlite'; // Default full path for database
 try {
     $db = new PDO('sqlite:' . $db_path);
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION); // Ensure PDO throws exceptions
+    // Enable foreign key constraints for data integrity
+    $db->exec('PRAGMA foreign_keys = ON');
 } catch (PDOException $e) {
     // Log error: error_log("Database Connection Error: " . $e->getMessage());
     // Display a generic error message and stop execution
@@ -33,6 +38,17 @@ if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > 
     exit;
 }
 $_SESSION['LAST_ACTIVITY'] = time(); // update last activity time stamp
+
+// Check for force reset session - redirect to force reset page if active
+if (isset($_SESSION['force_reset_session']) && $_SESSION['force_reset_session'] === true) {
+    // Allow access only to force_password_reset.php and logout.php
+    $currentPage = basename($_SERVER['PHP_SELF']);
+    if ($currentPage !== 'force_password_reset.php' && $currentPage !== 'logout.php') {
+        $resetPath = (strpos($_SERVER['PHP_SELF'], '/apps/') !== false || strpos($_SERVER['PHP_SELF'], '/users/') !== false) ? '../users/force_password_reset.php' : 'users/force_password_reset.php';
+        header('Location: ' . $resetPath);
+        exit;
+    }
+}
 
 // CSRF token check for POST requests
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['csrf_token'])) {
@@ -57,6 +73,37 @@ $auth = false;
 if (isset($_SESSION['username']) && isset($_SESSION['authenticated']) && $_SESSION['authenticated'] === true) {
     // User is authenticated via session
     $auth = true;
+    
+    // Validate session exists in database (for force logout functionality)
+    try {
+        $sessionId = session_id();
+        $userId = $_SESSION['user_id'] ?? null;
+        
+        if ($userId && $sessionId) {
+            $stmt = $db->prepare('SELECT ID FROM user_sessions WHERE UserID = :user_id AND SessionID = :session_id');
+            $stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
+            $stmt->bindParam(':session_id', $sessionId, PDO::PARAM_STR);
+            $stmt->execute();
+            
+            // If session not found in database, it was invalidated (force logged out)
+            if (!$stmt->fetch()) {
+                // Clear session and redirect to login
+                session_unset();
+                session_destroy();
+                $login_path = (strpos($_SERVER['PHP_SELF'], '/apps/') !== false || strpos($_SERVER['PHP_SELF'], '/users/') !== false) ? '../login.php?error=session_invalidated' : 'login.php?error=session_invalidated';
+                header('Location: ' . $login_path);
+                exit;
+            }
+            
+            // Update last activity in database
+            $stmt = $db->prepare('UPDATE user_sessions SET LastActivity = CURRENT_TIMESTAMP WHERE SessionID = :session_id');
+            $stmt->bindParam(':session_id', $sessionId, PDO::PARAM_STR);
+            $stmt->execute();
+        }
+    } catch (PDOException $e) {
+        // Log error but don't block user if session check fails
+        error_log("Session validation error: " . $e->getMessage());
+    }
 } else {
     $auth = false;
 }
