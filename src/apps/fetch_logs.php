@@ -20,5 +20,5 @@ if (!$user_id || !check_container_permission($db, $user_id, $container_name, 'lo
 }
 
 // Execute the logs command and output the result
-echo shell_exec('bash ../manage_containers.sh logs' . ' ' . escapeshellarg($container_name));
+echo shell_exec('bash ../private/manage_containers.sh logs' . ' ' . escapeshellarg($container_name));
 ?>

@@ -2,7 +2,7 @@
 require_once '../includes/auth.php'; // Use centralized auth
 require_once '../includes/functions.php';
 
-$containerList = shell_exec("bash ../manage_containers.sh list");
+$containerList = shell_exec("bash ../private/manage_containers.sh list");
 $containers = explode("\n", $containerList);
 
 // Get list of containers user has permission to view

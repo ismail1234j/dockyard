@@ -112,7 +112,7 @@ if (isset($_GET['info'])) {
   </div>
   
   <script>window.csrfToken = <?php echo json_encode($_SESSION['csrf_token'] ?? ''); ?>;</script>
-  <script src="includes/functions.js"></script>
+  <script src="/functions.js"></script>
   <script>refreshTable();</script>
 </body>
 </html>
