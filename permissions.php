@@ -196,6 +196,27 @@ try {
             <!-- Add new permission form -->
             <section>
                 <h2>Add New Permission</h2>
+                
+                <?php if (empty($containers)): ?>
+                    <div style="background-color: #fff3cd; color: #856404; padding: 1rem; border-radius: 4px; margin-bottom: 1rem;">
+                        <strong>⚠️ No containers available.</strong>
+                        <p>No Docker containers have been detected yet. The cron job (cron/cron.php) needs to run to discover containers from Docker.</p>
+                        <p>Make sure:</p>
+                        <ul>
+                            <li>Docker containers are running</li>
+                            <li>The cron job is properly scheduled</li>
+                            <li>The application has permission to access the Docker daemon</li>
+                        </ul>
+                    </div>
+                <?php endif; ?>
+                
+                <?php if (empty($users)): ?>
+                    <div style="background-color: #fff3cd; color: #856404; padding: 1rem; border-radius: 4px; margin-bottom: 1rem;">
+                        <strong>⚠️ No users available.</strong>
+                        <p>Create users first before assigning permissions. Go to <a href="users.php">Users</a> to create new users.</p>
+                    </div>
+                <?php endif; ?>
+                
                 <form method="post" action="">
                     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
                     <input type="hidden" name="action" value="update_permissions">
@@ -203,7 +224,7 @@ try {
                     <div class="grid">
                         <div>
                             <label for="user_id">User</label>
-                            <select id="user_id" name="user_id" required>
+                            <select id="user_id" name="user_id" required <?= empty($users) ? 'disabled' : '' ?>>
                                 <option value="">Select a user...</option>
                                 <?php foreach ($users as $user): ?>
                                     <option value="<?= htmlspecialchars($user['ID']) ?>">
@@ -215,7 +236,7 @@ try {
                         
                         <div>
                             <label for="container_id">Container</label>
-                            <select id="container_id" name="container_id" required>
+                            <select id="container_id" name="container_id" required <?= empty($containers) ? 'disabled' : '' ?>>
                                 <option value="">Select a container...</option>
                                 <?php foreach ($containers as $container): ?>
                                     <option value="<?= htmlspecialchars($container['ID']) ?>">
@@ -244,7 +265,7 @@ try {
                         </div>
                     </fieldset>
                     
-                    <button type="submit">Save Permissions</button>
+                    <button type="submit" <?= (empty($users) || empty($containers)) ? 'disabled' : '' ?>>Save Permissions</button>
                 </form>
             </section>
             
