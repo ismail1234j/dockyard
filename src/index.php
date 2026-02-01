@@ -17,7 +17,6 @@ require_once 'includes/auth.php';
 <section>
 <h1>You are logged in: <?php echo htmlspecialchars($_SESSION['username']); ?></h1>
 <div style="display: flex; gap: 10px; align-items: center;">
-    <?php include 'includes/notification_widget.php'; ?>
     <a href="logout.php">Log Out</a>
 </div>
 </section>
