@@ -55,7 +55,6 @@ if (isset($_GET['info'])) {
       <section>
         <h1>Container Manager</h1>
         <div class="" style="display: flex; gap: 10px; align-items: center;">
-          <?php include 'includes/notification_widget.php'; ?>
           <button class="secondary" onclick="location.href='index.php';">Back</button>
           <?php if ($isAdmin): ?>
             <button class="pico-background-amber-200" onclick="location.href='permissions.php';">Manage Permissions</button>
