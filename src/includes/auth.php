@@ -1,51 +1,57 @@
 <?php
-session_start();
-
-// Include security headers
-require_once __DIR__ . '/security_headers.php';
-
-/*
-if (isset($_SERVER['SERVER_SOFTWARE']) && stripos($_SERVER['SERVER_SOFTWARE'], 'LiteSpeed') == false) {
-    // Running under OpenLiteSpeed or LiteSpeed
-    echo "<script>alert('This app is better worked with OpenLiteSpeed or Litespeed Web Server.');</script>";
-}
+/* NOTES:
+   - All client facing pages should use this
+   - Login.php doesn't use this (for obvious reasons)
+   - All admin facing pages must call require_admin()
 */
 
-// Determine the correct relative path to the database file
-$root_dir = dirname(__DIR__); // Get parent directory of includes folder
-$db_path = $root_dir . '/data/db.sqlite'; // Default full path for database
+session_start();
+
+function redir_login(): void {
+    header('Location: /login.php');
+    exit;
+}
+
+// Security headers
+header("X-Frame-Options: DENY");
+header("X-Content-Type-Options: nosniff");
+header("X-XSS-Protection: 1; mode=block");
+header("Referrer-Policy: same-origin");
+header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com; img-src 'self' data:; connect-src 'self'");
+header("Permissions-Policy: geolocation=(), microphone=(), camera=()");
+
+// DB
+
+$root_dir = dirname(__DIR__);
+$db_path = $root_dir . '/data/db.sqlite';
 
 try {
     $db = new PDO('sqlite:' . $db_path);
-    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION); // Ensure PDO throws exceptions
-    // Enable foreign key constraints for data integrity
+    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     $db->exec('PRAGMA foreign_keys = ON');
 } catch (PDOException $e) {
-    // Log error: error_log("Database Connection Error: " . $e->getMessage());
-    // Display a generic error message and stop execution
-    // You might want a more user-friendly error page in a real application
     die("Database connection failed. Please try again later or contact support.");
 }
 
-// Session Timeout Check
+// Has their session timed out yet
 if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > 1800)) {
     // last request was more than 30 minutes ago
-    session_unset();     // unset $_SESSION variable for the run-time
-    session_destroy();   // destroy session data in storage
-    // Redirect to login page after timeout
-    $login_path = (strpos($_SERVER['PHP_SELF'], '/apps/') !== false || strpos($_SERVER['PHP_SELF'], '/users/') !== false) ? '../login.php' : 'login.php';
-    header('Location: ' . $login_path);
+    session_unset();     // unset session
+    session_destroy();   // destroy session data
+    // Redir to login page
+    redir_login();
     exit;
 }
+
 $_SESSION['LAST_ACTIVITY'] = time(); // update last activity time stamp
 
-// Check for force reset session - redirect to force reset page if active
+// here we check if a password reset has been mandated
+// if so then redir to logout
 if (isset($_SESSION['force_reset_session']) && $_SESSION['force_reset_session'] === true) {
     // Allow access only to force_password_reset.php and logout.php
     $currentPage = basename($_SERVER['PHP_SELF']);
     if ($currentPage !== 'force_password_reset.php' && $currentPage !== 'logout.php') {
-        $resetPath = (strpos($_SERVER['PHP_SELF'], '/apps/') !== false || strpos($_SERVER['PHP_SELF'], '/users/') !== false) ? '../users/force_password_reset.php' : 'users/force_password_reset.php';
-        header('Location: ' . $resetPath);
+        header('Location: /users/force_password_reset.php');
         exit;
     }
 }
@@ -68,13 +74,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['csrf_token'])) {
     }
 }
 
-// Authentication Check
+// Auth Check
 $auth = false;
-if (isset($_SESSION['username']) && isset($_SESSION['authenticated']) && $_SESSION['authenticated'] === true) {
-    // User is authenticated via session
+if (!empty($_SESSION['username']) && !empty($_SESSION['authenticated'])) {
+    // set auth bool
     $auth = true;
     
-    // Validate session exists in database (for force logout functionality)
+    // check session exists in database (for force logout functionality)
     try {
         $sessionId = session_id();
         $userId = $_SESSION['user_id'] ?? null;
@@ -90,12 +96,11 @@ if (isset($_SESSION['username']) && isset($_SESSION['authenticated']) && $_SESSI
                 // Clear session and redirect to login
                 session_unset();
                 session_destroy();
-                $login_path = (strpos($_SERVER['PHP_SELF'], '/apps/') !== false || strpos($_SERVER['PHP_SELF'], '/users/') !== false) ? '../login.php?error=session_invalidated' : 'login.php?error=session_invalidated';
-                header('Location: ' . $login_path);
+                redir_login();
                 exit;
             }
             
-            // Update last activity in database
+            // Update last activity in db
             $stmt = $db->prepare('UPDATE user_sessions SET LastActivity = CURRENT_TIMESTAMP WHERE SessionID = :session_id');
             $stmt->bindParam(':session_id', $sessionId, PDO::PARAM_STR);
             $stmt->execute();
@@ -108,16 +113,23 @@ if (isset($_SESSION['username']) && isset($_SESSION['authenticated']) && $_SESSI
     $auth = false;
 }
 
-// If not authenticated, redirect to login (except for login.php itself)
-if (!$auth && basename($_SERVER['PHP_SELF']) !== 'login.php') {
-    $login_path = (strpos($_SERVER['PHP_SELF'], '/apps/') !== false || strpos($_SERVER['PHP_SELF'], '/users/') !== false) ? '../login.php' : 'login.php';
-    header('Location: ' . $login_path);
-    exit;
+// If not authenticated, redirect to login
+if (!$auth) {
+    redir_login();
 }
 
 // Generate CSRF token if not exists
 if (!isset($_SESSION['csrf_token']) && $auth) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+
+// Function to check admin privileges
+function require_admin(): void {
+    if (empty($_SESSION['isAdmin']) || $_SESSION['isAdmin'] !== true) {
+        // Redirect to root index with error
+        header('Location: /index.php?error=unauthorized');
+        exit;
+    }
 }
 
 // Function to check for unauthorized error and add modal HTML and JavaScript
@@ -177,17 +189,5 @@ function checkForUnauthorizedError() {
 HTML;
     }
 }
-
-// Function to check admin privileges
-function require_admin() {
-    if (!isset($_SESSION['isAdmin']) || $_SESSION['isAdmin'] !== true) {
-        // Redirect with unauthorized error parameter
-        $path = (strpos($_SERVER['PHP_SELF'], '/apps/') !== false || strpos($_SERVER['PHP_SELF'], '/users/') !== false) ? '../index.php' : 'index.php';
-        header('Location: ' . $path . '?error=unauthorized');
-        exit;
-    }
-}
-
-// Call the function immediately after defining it
 checkForUnauthorizedError();
 ?>
