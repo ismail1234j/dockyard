@@ -1,73 +1,67 @@
-# Use official PHP 8.1 Apache image (Debian Bullseye base)
-FROM php:8.1-apache-bullseye
+# So this (theoretically) should save memory and compute
+FROM php:8.3-fpm-alpine AS php
 
-# Set working directory
+# Get our deps setup
+RUN apk add --no-cache \
+    bash \
+    curl \
+    git \
+    sudo \
+    sqlite \
+    icu-dev \
+    oniguruma-dev \
+    libxml2-dev \
+    tzdata \
+    nginx \
+    docker-cli \
+    dos2unix
+
+# PHP extensions
+RUN docker-php-ext-install pdo pdo_sqlite intl opcache
+
+# OPCache should hopefully reduce compute
+RUN { \
+  echo "opcache.enable=1"; \
+  echo "opcache.memory_consumption=64"; \
+  echo "opcache.interned_strings_buffer=8"; \
+  echo "opcache.max_accelerated_files=10000"; \
+  echo "opcache.validate_timestamps=0"; \
+} > /usr/local/etc/php/conf.d/opcache.ini
+
 WORKDIR /var/www/html
 
-# Copy application files
+# Copy the app (and set perms)
 COPY --chown=www-data:www-data /src /var/www/html/
 RUN chmod -R 777 /var/www/html
 
-# Install system dependencies, PHP extensions, and Docker CLI
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    apt-transport-https \
-    ca-certificates \
-    curl \
-    gnupg \
-    lsb-release \
-    sudo \
-    git \
-    unzip \
-    zip \
-    libsqlite3-dev \
-    libicu-dev \
-    sqlite3 \
-    && docker-php-ext-install pdo pdo_sqlite intl \
-    && curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg \
-    && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list \
-    && apt-get update && apt-get install -y --no-install-recommends docker-ce-cli \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-    && sudo apt-get install -y dos2unix
+# Docker perms
+RUN addgroup -g 999 docker || true \
+  && addgroup www-data docker \
+  && echo "www-data ALL=(ALL) NOPASSWD: /var/www/html/manage_containers.sh" > /etc/sudoers.d/manage-containers \
+  && chmod 0440 /etc/sudoers.d/manage-containers
 
-# Enable Apache rewrite module
-RUN a2enmod rewrite
+# We need db & dirs set
+RUN mkdir -p /var/www/html/data /var/www/html/logs \
+  && chmod 777 /var/www/html/data /var/www/html/logs \
+  && touch /var/www/html/data/db.sqlite \
+  && chown www-data:www-data /var/www/html/data/db.sqlite \
+  && chmod 777 /var/www/html/data/db.sqlite
 
-# Add www-data to docker group (make sure host group ID matches 999 if needed)
-RUN groupadd -g 999 docker || true && usermod -aG docker www-data
+# Scripts
+RUN chmod +x /var/www/html/manage_containers.sh
 
-# Create necessary directories before copying files
-RUN mkdir -p /var/www/html/data \
-    && mkdir -p /var/www/html/logs \
-    && chmod 777 /var/www/html/data \
-    && chmod 777 /var/www/html/logs
+# Nginx conf
+COPY nginx/default.conf /etc/nginx/http.d/default.conf
 
-# Create empty database file with proper permissions
-RUN touch /var/www/html/data/db.sqlite \
-    && chown www-data:www-data /var/www/html/data/db.sqlite \
-    && chmod 777 /var/www/html/data/db.sqlite
-
-# Configure passwordless sudo for docker management scripts
-RUN echo "www-data ALL=(ALL) NOPASSWD: /var/www/html/manage_containers.sh" > /etc/sudoers.d/manage-containers \
-    && chmod 0440 /etc/sudoers.d/manage-containers
-
-# Set proper permissions for executable scripts
-RUN chmod +x /var/www/html/manage_containers.sh \
-    && chmod +x /var/www/html/extras/entrypoint.sh
-
-RUN git config --global --add safe.directory /var/www/html
-
-# Copy entrypoint script to proper location and make it executable
+# Entrypoint
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh \
+  && dos2unix /usr/local/bin/entrypoint.sh \
+  && dos2unix /var/www/html/manage_containers.sh
 
 # Expose HTTP port
 EXPOSE 80
 
-# Make scripts use Unix line endings
-RUN dos2unix /var/www/html/manage_containers.sh \
-    && dos2unix /usr/local/bin/entrypoint.sh
-
 # Start Apache
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
-CMD ["apache2-foreground"]
+CMD ["sh", "-c", "php-fpm -D && nginx -g 'daemon off;'"]
