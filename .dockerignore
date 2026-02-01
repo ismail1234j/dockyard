@@ -1,9 +1,7 @@
 **/.idea
+**/.vscode
 README.md
-db.sqlite
+docs.md
 docker-compose.yml
 .prettierc.json
-composer.phar
-composer.json
-composer.lock
 .gitignore
