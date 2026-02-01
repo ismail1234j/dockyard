@@ -1,6 +1,1 @@
-db.sqlite
-setup.sqlite
-apps/minecraft.php
-docker-minecraft.sh
-apps/mc_action.php
-apps/fetch_players.php
+docs.md
