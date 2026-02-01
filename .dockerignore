@@ -5,3 +5,5 @@ docs.md
 docker-compose.yml
 .prettierc.json
 .gitignore
+Dockerfile
+src/dev.php
