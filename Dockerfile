@@ -8,6 +8,7 @@ RUN apk add --no-cache \
     git \
     sudo \
     sqlite \
+    sqlite-dev \
     icu-dev \
     oniguruma-dev \
     libxml2-dev \
@@ -35,7 +36,7 @@ COPY --chown=www-data:www-data /src /var/www/html/
 RUN chmod -R 777 /var/www/html
 
 # Docker perms
-RUN addgroup -g 999 docker || true \
+RUN addgroup docker 2>/dev/null || true \
   && addgroup www-data docker \
   && echo "www-data ALL=(ALL) NOPASSWD: /var/www/html/manage_containers.sh" > /etc/sudoers.d/manage-containers \
   && chmod 0440 /etc/sudoers.d/manage-containers
@@ -48,7 +49,7 @@ RUN mkdir -p /var/www/html/data /var/www/html/logs \
   && chmod 777 /var/www/html/data/db.sqlite
 
 # Scripts
-RUN chmod +x /var/www/html/manage_containers.sh
+RUN chmod +x /var/www/html/private/manage_containers.sh
 
 # Nginx conf
 COPY nginx/default.conf /etc/nginx/http.d/default.conf
@@ -56,8 +57,8 @@ COPY nginx/default.conf /etc/nginx/http.d/default.conf
 # Entrypoint
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh \
-  && dos2unix /usr/local/bin/entrypoint.sh \
-  && dos2unix /var/www/html/manage_containers.sh
+    && dos2unix /usr/local/bin/entrypoint.sh \
+    && dos2unix /var/www/html/private/manage_containers.sh
 
 # Expose HTTP port
 EXPOSE 80
