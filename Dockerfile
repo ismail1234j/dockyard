@@ -1,5 +1,5 @@
 # So this (theoretically) should save memory and compute
-FROM php:8.3-fpm-alpine AS php
+FROM php:8.3-fpm-alpine
 
 # Get our deps setup
 RUN apk add --no-cache \
