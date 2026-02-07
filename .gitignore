@@ -1,5 +1,3 @@
 docs.md
 src/data/db.sqlite
-src/logs/activity.log
-src/logs/error.log
-src/logs/*
+*.log
