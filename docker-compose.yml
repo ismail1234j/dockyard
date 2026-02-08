@@ -7,6 +7,6 @@ services:
     ports:
       - "81:80"
     volumes:
-      - ./src:/var/www/html
+      - ./container:/var/www/html
       - /var/run/docker.sock:/var/run/docker.sock
     restart: unless-stopped
