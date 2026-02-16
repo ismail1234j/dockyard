@@ -7,4 +7,5 @@ $baseDir = dirname(dirname($vendorDir));
 
 return array(
     'decc78cc4436b1292c6c0d151b19445c' => $vendorDir . '/phpseclib/phpseclib/phpseclib/bootstrap.php',
+    '9b38cf48e83f5d8f60375221cd213eee' => $vendorDir . '/phpstan/phpstan/bootstrap.php',
 );

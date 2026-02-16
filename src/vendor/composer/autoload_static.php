@@ -8,14 +8,15 @@ class ComposerStaticInit2e3b4aed4913de3d1a9bd4b135ead8c3
 {
     public static $files = array (
         'decc78cc4436b1292c6c0d151b19445c' => __DIR__ . '/..' . '/phpseclib/phpseclib/phpseclib/bootstrap.php',
+        '9b38cf48e83f5d8f60375221cd213eee' => __DIR__ . '/..' . '/phpstan/phpstan/bootstrap.php',
     );
 
     public static $prefixLengthsPsr4 = array (
-        'p' =>
+        'p' => 
         array (
             'phpseclib3\\' => 11,
         ),
-        'P' =>
+        'P' => 
         array (
             'ParagonIE\\ConstantTime\\' => 23,
             'PHPMailer\\PHPMailer\\' => 20,
@@ -23,15 +24,15 @@ class ComposerStaticInit2e3b4aed4913de3d1a9bd4b135ead8c3
     );
 
     public static $prefixDirsPsr4 = array (
-        'phpseclib3\\' =>
+        'phpseclib3\\' => 
         array (
             0 => __DIR__ . '/..' . '/phpseclib/phpseclib/phpseclib',
         ),
-        'ParagonIE\\ConstantTime\\' =>
+        'ParagonIE\\ConstantTime\\' => 
         array (
             0 => __DIR__ . '/..' . '/paragonie/constant_time_encoding/src',
         ),
-        'PHPMailer\\PHPMailer\\' =>
+        'PHPMailer\\PHPMailer\\' => 
         array (
             0 => __DIR__ . '/..' . '/phpmailer/phpmailer/src',
         ),
