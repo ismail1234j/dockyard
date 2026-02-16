@@ -1,5 +1,4 @@
 <?php
-// Remove duplicate session management and use centralized auth
 require_once 'includes/auth.php';
 ?>
 <!DOCTYPE html>

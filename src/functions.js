@@ -1,3 +1,5 @@
+// Functions.js im not too sure about this one, might go over it but seems alr so far
+
 function refreshTable() {
   const tableBody = document.getElementById('container-table-body');
   const originalContent = tableBody.innerHTML;
