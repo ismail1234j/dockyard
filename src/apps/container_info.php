@@ -294,7 +294,7 @@ $canStop = $isAdmin || check_container_permission($db, $user_id, $name, 'stop');
                 const logsContainer = document.getElementById('logs-container');
                 logsContainer.textContent = 'Loading logs...';
                 
-                fetch('action.php?logs=' + encodeURIComponent(containerName) + '&lines=50')
+                fetch('action.php?action=logs&name=' + encodeURIComponent(containerName) + '&lines=50')
                     .then(response => response.text())
                     .then(data => {
                         logsContainer.textContent = data || 'No logs available';
