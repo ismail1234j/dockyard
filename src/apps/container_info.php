@@ -29,7 +29,7 @@ $canStop = $isAdmin || check_container_permission($db, $user_id, $name, 'stop');
 <!DOCTYPE html>
 <html data-theme="light">
 <head>
-    <title><?php echo isset($name) ? htmlspecialchars($name) : 'Container Detail'; ?></title>
+    <title><?php echo $name ? htmlspecialchars($name) : 'Container Detail'; ?></title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     

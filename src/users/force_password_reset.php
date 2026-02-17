@@ -227,7 +227,7 @@ if (!isset($_SESSION['csrf_token'])) {
                 An administrator has required a password change. You have <strong><span id="timer-display">5:00</span></strong> to complete this action before the session expires.
             </div>
             
-            <?php if (isset($error_message) && $error_message): ?>
+            <?php if (!$error_message == ""): ?>
                 <div class="error-banner">
                     <i class="fa fa-times-circle"></i> <?= htmlspecialchars($error_message) ?>
                 </div>
