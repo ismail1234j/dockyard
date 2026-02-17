@@ -153,7 +153,7 @@ foreach ($containers as $container) {
             $url = !empty($existing['Url']) ? $existing['Url'] : $url;
             
             // Update container ID if we have it and it's not set
-            if ($container_id && empty($existing['ContainerID'])) {
+            if (!empty($container_id) && empty($existing['ContainerID'])) {
                 $stmt = $db->prepare('UPDATE apps SET ContainerID = :containerId WHERE ID = :id');
                 $stmt->bindParam(':containerId', $container_id, PDO::PARAM_STR);
                 $stmt->bindParam(':id', $existing['ID'], PDO::PARAM_INT);
