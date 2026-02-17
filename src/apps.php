@@ -1,5 +1,5 @@
 <?php
-require_once 'includes/auth.php'; // Use centralized auth
+require_once 'includes/auth.php';
 require_once 'includes/functions.php';
 
 $isAdmin = isset($_SESSION['isAdmin']) && $_SESSION['isAdmin'] === true;
@@ -56,9 +56,6 @@ if (isset($_GET['info'])) {
         <h1>Container Manager</h1>
         <div class="" style="display: flex; gap: 10px; align-items: center;">
           <button class="secondary" onclick="location.href='index.php';">Back</button>
-          <?php if ($isAdmin): ?>
-            <button class="pico-background-amber-200" onclick="location.href='permissions.php';">Manage Permissions</button>
-          <?php endif; ?>
         </div>
       </section>
     </header>
