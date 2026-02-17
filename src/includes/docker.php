@@ -22,6 +22,7 @@ class Docker
         return escapeshellarg($name);
     }
 
+    /** @return array{output: string, success: bool} */
     public function start(string $name): array
     {
         $escapedName = $this->validateName($name);
@@ -29,7 +30,8 @@ class Docker
         $success = strpos($output, $name) !== false || empty(trim($output));
         return ['output' => $output, 'success' => $success];
     }
-
+    
+    /** @return array{output: string, success: bool} */
     public function stop(string $name): array
     {
         $escapedName = $this->validateName($name);
@@ -38,6 +40,7 @@ class Docker
         return ['output' => $output, 'success' => $success];
     }
 
+    /** @return array{output: string, success: bool} */
     public function logs(string $name, int $lines = 30): array
     {
         $escapedName = $this->validateName($name);
@@ -46,6 +49,7 @@ class Docker
         return ['output' => $output, 'success' => true];
     }
 
+    /** @return array{output: string, success: bool} */
     public function status(string $name): array
     {
         $escapedName = $this->validateName($name);
