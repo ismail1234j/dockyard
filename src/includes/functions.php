@@ -1,7 +1,7 @@
 <?php
 
 /// Function to display a modal for any argument passed to it
-function Modal($title, $message) {
+function Modal(string $title, string $message): void {
         echo <<<HTML
         <dialog open id='errorDialog'>
             <article>
@@ -37,7 +37,7 @@ HTML;
  * @param string $action Action to check (view, start, stop)
  * @return bool True if user has permission, false otherwise
  */
-function check_container_permission($db, $user_id, $container_name, $action) {
+function check_container_permission(PDO $db, int $user_id, string $container_name, string $action): bool {
     global $_SESSION;
     
     // Admins have full access to all containers
@@ -93,7 +93,7 @@ function check_container_permission($db, $user_id, $container_name, $action) {
  * @param int $user_id User ID
  * @return array Array of container names
  */
-function get_user_containers($db, $user_id) {
+function get_user_containers(PDO $db, int $user_id): array {
     global $_SESSION;
     
     // Admins can see all containers
