@@ -3,8 +3,8 @@
   "description": "Small, Lightweight Docker container management app written in PHP.",
   "type": "project",
   "require": {
-    "phpmailer/phpmailer": "^6.8",
-    "jumbojett/openid-connect-php": "^0.9"
+    "jumbojett/openid-connect-php": "^0.9",
+    "phpmailer/phpmailer": "^6.8"
   },
   "config": {
     "optimize-autoloader": true,

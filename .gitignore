@@ -1,3 +1,5 @@
 docs.md
 src/data/db.sqlite
 *.log
+dev.sh
+config.ini

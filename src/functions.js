@@ -27,20 +27,6 @@ function refreshTable() {
   });
 }
 
-async function fetchLogs($containerName) {
-    try {
-        const response = await fetch('fetch_logs.php?name=' + $containerName); // Endpoint to fetch logs
-        if (response.ok) {
-            const logs = await response.text();
-            document.getElementById('logs').textContent = logs;
-        } else {
-            document.getElementById('logs').textContent = 'Failed to fetch logs.';
-        }
-    } catch (error) {
-        document.getElementById('logs').textContent = 'Error fetching logs.';
-    }
-}
-
 function startContainer(name) {
   if (confirm("Are you sure you want to start the container " + name + "?")) {
       window.location.href = "action.php?start=" + encodeURIComponent(name);
