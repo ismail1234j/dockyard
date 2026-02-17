@@ -38,7 +38,6 @@ HTML;
  * @return bool True if user has permission, false otherwise
  */
 function check_container_permission(PDO $db, int $user_id, string $container_name, string $action): bool {
-    global $_SESSION;
     
     // Admins have full access to all containers
     if (isset($_SESSION['isAdmin']) && $_SESSION['isAdmin'] === true) {
@@ -94,7 +93,6 @@ function check_container_permission(PDO $db, int $user_id, string $container_nam
  * @return array Array of container names
  */
 function get_user_containers(PDO $db, int $user_id): array {
-    global $_SESSION;
     
     // Admins can see all containers
     if (isset($_SESSION['isAdmin']) && $_SESSION['isAdmin'] === true) {
