@@ -3,7 +3,7 @@
         'name' => 'ismail/dockyard',
         'pretty_version' => 'dev-master',
         'version' => 'dev-master',
-        'reference' => '83a4113e1aa6a0eccefaae3cf8a42fc91b356374',
+        'reference' => 'b5a9f8911a0a5b3ed7f253c8b9ec32755a6761ab',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         'ismail/dockyard' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
-            'reference' => '83a4113e1aa6a0eccefaae3cf8a42fc91b356374',
+            'reference' => 'b5a9f8911a0a5b3ed7f253c8b9ec32755a6761ab',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../../',
             'aliases' => array(),
