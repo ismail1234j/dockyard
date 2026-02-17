@@ -1,6 +1,6 @@
 <?php
 session_start();
-include_once 'includes/db.php';
+require_once 'includes/db.php';
 $db = get_db();
 
 // Remove session from database

@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-include_once 'includes/db.php';
+require_once 'includes/db.php';
 $db = get_db();
 
     if (!isset($_SESSION['username']) && !isset($_SESSION['authenticated'])){

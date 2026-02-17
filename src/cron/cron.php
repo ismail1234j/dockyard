@@ -11,7 +11,7 @@
  * - Set check_links=true to test container URLs
  */
 
-include_once '../includes/db.php';
+require_once '../includes/db.php';
 
 // Path to the container management script
 $scriptPath = dirname(__DIR__) . '/private/manage_containers.sh';
