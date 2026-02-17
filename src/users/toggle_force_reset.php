@@ -4,8 +4,10 @@
 
 require_once '../includes/auth.php';
 require_once '../includes/functions.php';
+require_once '../includes/db.php';
 
-// Require admin privileges
+$db = get_db();
+
 require_admin();
 
 header('Content-Type: application/json');
@@ -69,10 +71,10 @@ try {
         }
     }
     
-    // Log admin action with complete details
-    $adminUserId = $_SESSION['user_id'];
-    $action = $enabled ? 'ENABLE_FORCE_PASSWORD_RESET' : 'DISABLE_FORCE_PASSWORD_RESET';
-    log_admin_action($db, $adminUserId, $userId, $action, $details);
+    // Log admin action with complete  (doesnt exist)
+    // $adminUserId = $_SESSION['user_id'];
+    // $action = $enabled ? 'ENABLE_FORCE_PASSWORD_RESET' : 'DISABLE_FORCE_PASSWORD_RESET';
+    // log_admin_action($db, $adminUserId, $userId, $action, $details);
     
     $message = $enabled 
         ? "Force password reset enabled for " . $targetUser['username'] . ($sessionsInvalidated ? ". User has been logged out." : ". Note: Could not log out user automatically.")

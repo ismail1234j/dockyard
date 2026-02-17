@@ -7,7 +7,6 @@ $error_message = '';
 $success_message = '';
 
 // Change the users password
-if ($auth) {
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Validate CSRF token
         if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
@@ -45,7 +44,6 @@ if ($auth) {
             }
         }
     }
-}
 ?>
 <!DOCTYPE html>
 <html data-theme="light">

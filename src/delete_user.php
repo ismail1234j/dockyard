@@ -9,7 +9,7 @@ require_admin();
 $error_message = null;
 $success_message = null;
 
-if ($auth) {
+
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Validate CSRF token for AJAX requests
         if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
@@ -51,9 +51,4 @@ if ($auth) {
         http_response_code(405); // Method Not Allowed
         echo 'Error: Invalid request method.';
     }
-} else {
-    // Auth check failed (handled by auth.php redirect, but added for completeness)
-    http_response_code(401); // Unauthorized
-    echo 'Error: Unauthorized.';
-}
 ?>

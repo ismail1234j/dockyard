@@ -88,7 +88,6 @@ $username = $_SESSION['username'];
         }
     </style>
 </head>
-<?php if ($auth): ?>
 <body>
     <div class="container" style="padding-top: 2rem;">
         <header>
@@ -230,5 +229,4 @@ $username = $_SESSION['username'];
         }
     </script>
 </body>
-<?php endif; ?>
 </html>
