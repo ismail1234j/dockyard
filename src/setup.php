@@ -88,22 +88,6 @@ output("Foreign key constraints enabled.", 'cli');
     $db->exec($createUsersTableQuery);
     $db->exec($createContainerPermissionsQuery);
     
-    // Create notifications table
-    output("Creating notifications table...", 'cli');
-    $createNotificationsTableQuery = "
-        CREATE TABLE IF NOT EXISTS notifications (
-            ID INTEGER PRIMARY KEY AUTOINCREMENT,
-            UserID INTEGER,
-            ContainerID INTEGER,
-            Type TEXT NOT NULL,
-            Message TEXT NOT NULL,
-            IsRead BOOLEAN NOT NULL DEFAULT 0,
-            CreatedAt TEXT DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (UserID) REFERENCES users(ID) ON DELETE CASCADE,
-            FOREIGN KEY (ContainerID) REFERENCES apps(ID) ON DELETE CASCADE
-        )";
-    $db->exec($createNotificationsTableQuery);
-    
     // Create admin actions log table
     output("Creating admin_actions_log table...", 'cli');
     $createAdminActionsLogQuery = "
@@ -152,8 +136,6 @@ output("Foreign key constraints enabled.", 'cli');
     $db->exec('CREATE INDEX IF NOT EXISTS idx_container_permissions_container ON container_permissions(ContainerID)');
     $db->exec('CREATE INDEX IF NOT EXISTS idx_apps_container_id ON apps(ContainerID)');
     $db->exec('CREATE INDEX IF NOT EXISTS idx_apps_status ON apps(Status)');
-    $db->exec('CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(UserID)');
-    $db->exec('CREATE INDEX IF NOT EXISTS idx_notifications_read ON notifications(IsRead)');
     $db->exec('CREATE INDEX IF NOT EXISTS idx_admin_log_admin ON admin_actions_log(AdminUserID)');
     $db->exec('CREATE INDEX IF NOT EXISTS idx_admin_log_target ON admin_actions_log(TargetUserID)');
     $db->exec('CREATE INDEX IF NOT EXISTS idx_user_sessions_user ON user_sessions(UserID)');

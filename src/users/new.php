@@ -67,66 +67,206 @@ if ($auth) {
 <html data-theme="light">
 <head>
     <title>New User</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.orange.min.css"/>
-    <link
-        rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.colors.min.css"
-    />
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Pico CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.orange.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.colors.min.css" />
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+
+    <style>
+        article {
+            max-width: 600px;
+            margin: 0 auto;
+            box-shadow: var(--pico-card-sectioning-background-color);
+        }
+        
+        .header-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--pico-spacing);
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: var(--pico-border-radius);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .alert-error {
+            background-color: #f8d7da;
+            color: #842029;
+            border: 1px solid #f5c2c7;
+        }
+
+        /* Dynamic Requirements Styling */
+        .password-requirements-box {
+            background-color: var(--pico-card-background-color);
+            border: 1px solid var(--pico-muted-border-color);
+            border-radius: var(--pico-border-radius);
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .password-requirements-box h4 {
+            font-size: 0.9rem;
+            margin-bottom: 0.75rem;
+            color: var(--pico-heading-color);
+        }
+        
+        .password-requirements-box ul {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 0.5rem;
+        }
+        
+        .password-requirements-box li {
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--pico-muted-color);
+            transition: all 0.2s ease;
+        }
+        
+        .password-requirements-box li::before {
+            content: '\f00d'; /* Times */
+            font-family: 'FontAwesome';
+            color: #d93526;
+            width: 1rem;
+            text-align: center;
+        }
+        
+        .password-requirements-box li.valid {
+            color: var(--pico-color);
+        }
+        
+        .password-requirements-box li.valid::before {
+            content: '\f00c'; /* Check */
+            color: #388e3c;
+        }
+
+        .form-footer {
+            margin-top: 1.5rem;
+        }
+
+        .admin-toggle {
+            background: var(--pico-card-sectioning-background-color);
+            padding: 1rem;
+            border-radius: var(--pico-border-radius);
+            margin-top: 1rem;
+        }
+    </style>
 </head>
-<?php if ($auth) : ?>
-    <body>
-    <div class="container" style="margin-top: 6%">
-        <header>
-            <section>
-                <h1>New User</h1>
-                <button class="secondary" onclick="location.href='../users.php';">Back</button>
-            </section>
-        </header>
-        <hr />
-        <main>
-            <section>
-                <?php if (!empty($error_message)): ?>
-                    <p style="color: red;"><?php echo htmlspecialchars($error_message); ?></p>
-                <?php endif; ?>
-                <div class="overflow-auto">
-                    <form method="post">
-                        <!-- Add CSRF token field -->
+<body>
+    <div class="container" style="padding-top: 4rem; padding-bottom: 4rem;">
+            <article>
+                <header>
+                    <div class="header-nav">
+                        <hgroup style="margin: 0;">
+                            <h1>New User</h1>
+                        </hgroup>
+                        <button class="secondary outline" onclick="location.href='../users.php';" style="width: auto;">
+                            <i class="fa fa-arrow-left"></i> Back
+                        </button>
+                    </div>
+                </header>
+
+                <main>
+                    <!-- PHP Message Handling -->
+                    <?php if (!empty($error_message)): ?>
+                        <div class="alert alert-error">
+                            <i class="fa fa-exclamation-circle"></i>
+                            <span><?php echo htmlspecialchars($error_message); ?></span>
+                        </div>
+                    <?php endif; ?>
+
+                    <div class="password-requirements-box">
+                        <h4>Required Strength:</h4>
+                        <ul>
+                            <li id="req-length">8+ characters</li>
+                            <li id="req-uppercase">Uppercase (A-Z)</li>
+                            <li id="req-lowercase">Lowercase (a-z)</li>
+                            <li id="req-number">Number (0-9)</li>
+                            <li id="req-special">Special (!@#$%^&*)</li>
+                        </ul>
+                    </div>
+
+                    <form method="post" id="userForm">
                         <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
-                        <label for="username">Username</label>
-                        <input type="text" id="username" name="username" required>
-                        <label for="password">Password</label> 
-                        <input type="password" id="password" name="password" required> <!-- Added password field -->
-                        <label for="email">Email</label>
-                        <input type="email" id="email" name="email"> <!-- Added email field -->
-                        <label for="isAdmin" style="padding-bottom: 10px;">
-                            <input type="checkbox" id="isAdmin" name="isAdmin" value="1">
-                            Is Admin?
-                        </label> <!-- Added IsAdmin checkbox -->
-                        <button type="submit">Create</button>
+                        
+                        <label for="username">
+                            Username
+                            <input type="text" id="username" name="username" placeholder="jdoe" required>
+                        </label>
+
+                        <label for="password">
+                            Initial Password
+                            <input type="password" id="password" name="password" placeholder="••••••••" required>
+                        </label>
+
+                        <label for="email">
+                            Email Address
+                            <input type="email" id="email" name="email" placeholder="user@example.com">
+                        </label>
+
+                        <div class="admin-toggle">
+                            <label for="isAdmin" style="margin: 0;">
+                                <input type="checkbox" id="isAdmin" name="isAdmin" value="1">
+                                Assign Administrator Privileges
+                            </label>
+                        </div>
+
+                        <div class="form-footer">
+                            <button type="submit" class="contrast">
+                                <i class="fa fa-user-plus"></i> Create User
+                            </button>
+                        </div>
                     </form>
-                </div>
-            </section>
-        </main>
-    </div>
-    </body>
-<?php else : ?>
-    <body>
-    <div class="container" style="margin-top: 6%">
-        <header>
-            <section>
-                <h1>Unauthorized</h1>
-            </section>
-        </header>
-        <hr />
-        <main>
-            <section>
-                <div class="overflow-auto">
-                    <p>You are not authorized to view this page.</p>
-                </div>
-            </section>
-        </main>
-    </div>
-    </body>
-<?php endif; ?>
+                </main>
+            </article>
+
+    <script>
+        const passwordInput = document.getElementById('password');
+        const form = document.getElementById('userForm');
+
+        const requirements = {
+            length: (val) => val.length >= 8,
+            uppercase: (val) => /[A-Z]/.test(val),
+            lowercase: (val) => /[a-z]/.test(val),
+            number: (val) => /[0-9]/.test(val),
+            special: (val) => /[!@#$%^&*(),.?":{}|<>]/.test(val)
+        };
+
+        const updateRequirements = () => {
+            const val = passwordInput.value;
+            document.getElementById('req-length').classList.toggle('valid', requirements.length(val));
+            document.getElementById('req-uppercase').classList.toggle('valid', requirements.uppercase(val));
+            document.getElementById('req-lowercase').classList.toggle('valid', requirements.lowercase(val));
+            document.getElementById('req-number').classList.toggle('valid', requirements.number(val));
+            document.getElementById('req-special').classList.toggle('valid', requirements.special(val));
+        };
+
+        passwordInput.addEventListener('input', updateRequirements);
+
+        form.addEventListener('submit', function(e) {
+            const val = passwordInput.value;
+            const allValid = Object.values(requirements).every(fn => fn(val));
+
+            if (!allValid) {
+                e.preventDefault();
+                alert('Please ensure the password meets all required security criteria.');
+            }
+        });
+    </script>
+</body>
 </html>

@@ -22,16 +22,7 @@ header("Permissions-Policy: geolocation=(), microphone=(), camera=()");
 
 // DB
 
-$root_dir = dirname(__DIR__);
-$db_path = $root_dir . '/data/db.sqlite';
-
-try {
-    $db = new PDO('sqlite:' . $db_path);
-    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $db->exec('PRAGMA foreign_keys = ON');
-} catch (PDOException $e) {
-    die("Database connection failed. Please try again later or contact support.");
-}
+require_once 'db.php';
 
 // Has their session timed out yet
 if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > 1800)) {

@@ -2,16 +2,13 @@
 if (!isset($_GET['name'])) {
     exit();
 }
-require_once '../includes/auth.php'; // Use centralized auth
+require_once '../includes/db.php';
+require_once '../includes/auth.php'; 
 require_once '../includes/functions.php';
 $name = htmlspecialchars($_GET['name'], ENT_QUOTES, 'UTF-8');
-// Check if the user is authenticated
-if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
-    header('Location: ../login.php');
-    exit();
-}
 
 // Check if user has permission to view this container
+// Todo: Migrate to the func in functions.php
 $user_id = $_SESSION['user_id'] ?? null;
 if (!$user_id || !check_container_permission($db, $user_id, $name, 'view')) {
     header('Location: ../apps.php?error=unauthorized');
@@ -28,294 +25,269 @@ $canStart = $isAdmin || check_container_permission($db, $user_id, $name, 'start'
 $canStop = $isAdmin || check_container_permission($db, $user_id, $name, 'stop');
 
 ?>
-
 <!DOCTYPE html>
 <html data-theme="light">
-    <head>
-        <title><?php echo $name; ?></title>
-      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.orange.min.css"/>
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/>
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <style>
-        .action-button { margin: 5px; }
-        .action-button i { margin-right: 5px; }
-        .action-start { background-color:rgb(50, 119, 54); color: white; }
-        .action-stop { background-color:rgb(203, 54, 54); color: white; }
-        .action-edit { background-color:rgb(255, 165, 0); color: white; }
-        .action-logs { background-color:rgb(114, 174, 214); color: white; }
-        
-        /* Custom Modal Styles */
-        .custom-modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.7);
-            animation: fadeIn 0.3s;
+<head>
+    <title><?php echo isset($name) ? htmlspecialchars($name) : 'Container Detail'; ?></title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Pico CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.orange.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.colors.min.css" />
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+
+    <style>
+        article {
+            max-width: 1000px;
+            margin: 0 auto;
+            box-shadow: var(--pico-card-sectioning-background-color);
         }
         
-        .modal-content {
-            background-color: #13171f;
-            margin: 10% auto;
-            padding: 30px;
-            border-radius: 8px;
-            width: 90%;
-            max-width: 500px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-            animation: slideIn 0.3s;
-        }
-        
-        .modal-header {
-            margin-bottom: 20px;
-        }
-        
-        .modal-body {
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        
-        .modal-footer {
+        .header-nav {
             display: flex;
-            justify-content: flex-end;
-            gap: 10px;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--pico-spacing);
+        }
+
+        /* Status Badge Styling */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 1rem;
         }
         
-        .spinner {
-            display: inline-block;
-            width: 40px;
-            height: 40px;
-            border: 4px solid rgba(255,255,255,.3);
-            border-radius: 50%;
-            border-top-color: #fff;
-            animation: spin 1s ease-in-out infinite;
+        .status-running { background-color: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+        .status-exited, .status-stopped { background-color: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
+        .status-created, .status-unknown { background-color: #fff3e0; color: #ef6c00; border: 1px solid #ffe0b2; }
+
+        .action-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
         }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+
+        .action-btn {
+            width: auto;
+            margin: 0;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        @keyframes slideIn {
-            from { transform: translateY(-50px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        
-        /* Logs section */
+
+        /* Logs Section */
         .logs-section {
-            margin-top: 30px;
-        }
-        
-        .logs-container {
-            background-color: #1E1E1E;
-            border-radius: 5px;
-            padding: 15px;
-            font-family: 'Courier New', monospace;
-            white-space: pre-wrap;
-            max-height: 400px;
-            overflow-y: auto;
-            color: #CCCCCC;
-            font-size: 0.9em;
+            margin-top: 2rem;
+            background: var(--pico-card-sectioning-background-color);
+            border-radius: var(--pico-border-radius);
+            padding: 1.5rem;
+            border: 1px solid var(--pico-muted-border-color);
         }
         
         .logs-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 1rem;
         }
-        
-        .status-badge {
+
+        .logs-container {
+            background-color: #0d1117;
+            color: #d1d5db;
+            padding: 1.25rem;
+            border-radius: 8px;
+            font-family: 'Fira Code', 'Courier New', monospace;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            max-height: 500px;
+            overflow-y: auto;
+            border: 1px solid #30363d;
+        }
+
+        /* Spinner for loading modal */
+        .loader-spinner {
+            width: 48px;
+            height: 48px;
+            border: 5px solid var(--pico-muted-border-color);
+            border-bottom-color: var(--pico-primary);
+            border-radius: 50%;
             display: inline-block;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-weight: bold;
-            text-transform: uppercase;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
         }
-        
-        .status-running { background-color: #28a745; color: white; }
-        .status-exited, .status-stopped { background-color: #dc3545; color: white; }
-        .status-created, .status-unknown { background-color: #ffc107; color: black; }
-      </style>
-    </head>
-    <body>
-        <div class="container" style="margin-top: 8%;">
-            <h1><?php echo $name; ?></h1>
-            <span class="status-badge status-<?php echo strtolower(trim($status)); ?>">
-                <?php echo trim($status); ?>
-            </span>
-            <hr />
-            
-            <?php if (isset($_GET['action_status'])): ?>
-                <div style="padding: 1rem; border-radius: 4px; margin-bottom: 1rem; <?php echo $_GET['action_status'] === 'success' ? 'background-color: #d1e7dd; color: #0f5132;' : 'background-color: #f8d7da; color: #842029;'; ?>">
-                    <?php 
-                    if ($_GET['action_status'] === 'success') {
-                        echo 'Container ' . htmlspecialchars($_GET['action_type'] ?? 'action') . ' completed successfully.';
-                    } else {
-                        echo 'Failed to ' . htmlspecialchars($_GET['action_type'] ?? 'perform action') . ' container.';
-                    }
-                    ?>
-                </div>
-            <?php endif; ?>
-            
-            <div class="action-buttons">
-                <button class="secondary" onclick="location.href='../apps.php';">Back</button>
-                
-                <?php if ($isAdmin): ?>
-                <button class="action-button action-edit" onclick="location.href='container_edit.php?name=<?php echo urlencode($name); ?>';">
-                    <i class="fa fa-edit"></i> Edit
-                </button>
-                <?php endif; ?>
-                
-                <button class="action-button action-start" onclick="showConfirmModal('start', <?php echo json_encode($name); ?>)" <?php echo $canStart ? '' : 'disabled'; ?>>
-                    <i class="fa fa-play"></i> Start
-                </button>
-                
-                <button class="action-button action-stop" onclick="showConfirmModal('stop', <?php echo json_encode($name); ?>)" <?php echo $canStop ? '' : 'disabled'; ?>>
-                    <i class="fa fa-stop"></i> Stop
-                </button>
-            </div>
-            
-            <!-- Logs Section -->
-            <div class="logs-section">
-                <div class="logs-header">
-                    <h3>Container Logs</h3>
-                    <button onclick="refreshLogs()" class="action-button action-logs">
-                        <i class="fa fa-refresh"></i> Refresh Logs
+
+        @keyframes rotation {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Confirmation Dialog Styles */
+        dialog article {
+            max-width: 450px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" style="padding-top: 4rem; padding-bottom: 4rem;">
+        <article>
+            <header>
+                <div class="header-nav">
+                    <hgroup style="margin: 0;">
+                        <h1><?php echo htmlspecialchars($name); ?></h1>
+                        <p>Container Management Interface</p>
+                    </hgroup>
+                    <button class="secondary outline" onclick="location.href='../apps.php';" style="width: auto;">
+                        <i class="fa fa-arrow-left"></i> Back to Apps
                     </button>
                 </div>
-                <div id="logs-container" class="logs-container">
-                    Loading logs...
+            </header>
+
+            <main>
+                <!-- Status Row -->
+                <div class="status-badge status-<?php echo strtolower(trim($status)); ?>">
+                    <i class="fa fa-circle" style="font-size: 8px; margin-right: 8px;"></i>
+                    <?php echo htmlspecialchars(trim($status)); ?>
                 </div>
-            </div>
-        </div>
-        
-        <!-- Confirmation Modal -->
-        <div id="confirm-modal" class="custom-modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3 id="modal-title">Confirm Action</h3>
+
+                <!-- Action Notifications -->
+                <?php if (isset($_GET['action_status'])): ?>
+                    <div style="padding: 1rem; border-radius: var(--pico-border-radius); margin-bottom: 1.5rem; border: 1px solid; 
+                        <?php echo $_GET['action_status'] === 'success' ? 'background-color: #d1e7dd; color: #0f5132; border-color: #badbcc;' : 'background-color: #f8d7da; color: #842029; border-color: #f5c2c7;'; ?>">
+                        <i class="fa <?php echo $_GET['action_status'] === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle'; ?>"></i>
+                        <?php 
+                        if ($_GET['action_status'] === 'success') {
+                            echo 'Container ' . htmlspecialchars($_GET['action_type'] ?? 'action') . ' completed successfully.';
+                        } else {
+                            echo 'Failed to ' . htmlspecialchars($_GET['action_type'] ?? 'perform action') . ' container.';
+                        }
+                        ?>
+                    </div>
+                <?php endif; ?>
+
+                <!-- Controls -->
+                <div class="action-group">
+                    <?php if ($isAdmin): ?>
+                    <button class="action-btn warning" onclick="location.href='container_edit.php?name=<?php echo urlencode($name); ?>';">
+                        <i class="fa fa-pencil"></i> Configure
+                    </button>
+                    <?php endif; ?>
+                    
+                    <button class="action-btn success" onclick="confirmAction('start')" <?php echo $canStart ? '' : 'disabled'; ?>>
+                        <i class="fa fa-play"></i> Start Instance
+                    </button>
+                    
+                    <button class="action-btn error outline" onclick="confirmAction('stop')" <?php echo $canStop ? '' : 'disabled'; ?>>
+                        <i class="fa fa-stop"></i> Stop Instance
+                    </button>
                 </div>
-                <div class="modal-body">
-                    <p id="modal-message">Are you sure?</p>
+
+                <!-- Logs Explorer -->
+                <div class="logs-section">
+                    <div class="logs-header">
+                        <h3 style="margin: 0; font-size: 1.1rem;"><i class="fa fa-terminal"></i> Console Output</h3>
+                        <button onclick="refreshLogs()" class="secondary outline" style="width: auto; margin: 0; font-size: 0.8rem; padding: 0.25rem 0.75rem;">
+                            <i class="fa fa-refresh"></i> Refresh
+                        </button>
+                    </div>
+                    <div id="logs-container" class="logs-container">Streaming logs...</div>
                 </div>
-                <div class="modal-footer">
-                    <button class="secondary" onclick="closeModal('confirm-modal')">Cancel</button>
-                    <button id="modal-confirm-btn" onclick="executeAction()">Confirm</button>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Loading Modal -->
-        <div id="loading-modal" class="custom-modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3 id="loading-title">Processing</h3>
-                </div>
-                <div class="modal-body">
-                    <div class="spinner"></div>
-                    <p id="loading-message">Please wait...</p>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Result Modal -->
-        <div id="result-modal" class="custom-modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3 id="result-title">Result</h3>
-                </div>
-                <div class="modal-body">
-                    <p id="result-message">Action completed</p>
-                </div>
-                <div class="modal-footer">
-                    <button onclick="closeResultModal()">OK</button>
-                </div>
-            </div>
-        </div>
-        
-        <script>
-            const containerName = <?php echo json_encode($name); ?>;
-            let pendingAction = null;
+            </main>
+
+            <footer>
+            </footer>
+        </article>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <dialog id="confirm-modal">
+        <article>
+            <header>
+                <a href="#close" aria-label="Close" class="close" onclick="closeModal('confirm-modal')"></a>
+                <h3 id="modal-title">Confirm Action</h3>
+            </header>
+            <p id="modal-message">Are you sure you want to proceed?</p>
+            <footer>
+                <button class="secondary" onclick="closeModal('confirm-modal')">Cancel</button>
+                <button id="modal-confirm-btn" onclick="executeAction()">Confirm</button>
+            </footer>
+        </article>
+    </dialog>
+
+    <!-- Loading Overlay -->
+    <dialog id="loading-modal">
+        <article style="text-align: center; padding: 3rem;">
+            <span class="loader-spinner"></span>
+            <h3 id="loading-title" style="margin-top: 1.5rem;">Processing Request</h3>
+            <p id="loading-message">Communicating with the container daemon...</p>
+        </article>
+    </dialog>
+
+    <script>
+        const containerName = <?php echo json_encode($name); ?>;
+        let pendingAction = null;
+
+        function confirmAction(action) {
+            pendingAction = action;
+            const modal = document.getElementById('confirm-modal');
+            const title = document.getElementById('modal-title');
+            const message = document.getElementById('modal-message');
+            const confirmBtn = document.getElementById('modal-confirm-btn');
+
+            title.innerText = action === 'start' ? 'Start Container' : 'Stop Container';
+            message.innerText = `Are you sure you want to ${action} "${containerName}"? This may affect connected services.`;
             
-            function showConfirmModal(action, name) {
-                pendingAction = action;
-                const modal = document.getElementById('confirm-modal');
-                const title = document.getElementById('modal-title');
-                const message = document.getElementById('modal-message');
-                const confirmBtn = document.getElementById('modal-confirm-btn');
-                
-                title.textContent = action === 'start' ? 'Start Container' : 'Stop Container';
-                message.textContent = `Are you sure you want to ${action} the container "${name}"?`;
-                confirmBtn.className = action === 'start' ? 'action-start' : 'action-stop';
-                
-                modal.style.display = 'block';
-            }
+            confirmBtn.className = action === 'start' ? 'success' : 'error';
+            modal.showModal();
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).close();
+        }
+
+        function executeAction() {
+            if (!pendingAction) return;
+            closeModal('confirm-modal');
             
-            function closeModal(modalId) {
-                document.getElementById(modalId).style.display = 'none';
-                pendingAction = null;
-            }
+            const loadModal = document.getElementById('loading-modal');
+            document.getElementById('loading-title').innerText = pendingAction === 'start' ? 'Starting...' : 'Stopping...';
+            loadModal.showModal();
+
+            const url = `action.php?${pendingAction}=${encodeURIComponent(containerName)}`;
+            window.location.href = url;
+        }
+
+        function refreshLogs() {
+            const container = document.getElementById('logs-container');
+            container.style.opacity = '0.5';
             
-            function executeAction() {
-                if (!pendingAction) return;
-                
-                closeModal('confirm-modal');
-                showLoadingModal(pendingAction);
-                
-                // Execute the action
-                const url = `action.php?${pendingAction}=${encodeURIComponent(containerName)}`;
-                window.location.href = url;
-            }
-            
-            function showLoadingModal(action) {
-                const modal = document.getElementById('loading-modal');
-                const title = document.getElementById('loading-title');
-                const message = document.getElementById('loading-message');
-                
-                title.textContent = action === 'start' ? 'Starting Container' : 'Stopping Container';
-                message.textContent = `Please wait while the container is ${action === 'start' ? 'starting' : 'stopping'}...`;
-                
-                modal.style.display = 'block';
-            }
-            
-            function closeResultModal() {
-                closeModal('result-modal');
-                location.reload();
-            }
-            
-            function refreshLogs() {
-                const logsContainer = document.getElementById('logs-container');
-                logsContainer.textContent = 'Loading logs...';
-                
-                fetch('action.php?logs=' + encodeURIComponent(containerName) + '&lines=50')
-                    .then(response => response.text())
-                    .then(data => {
-                        logsContainer.textContent = data || 'No logs available';
-                    })
-                    .catch(error => {
-                        console.error('Error fetching logs:', error);
-                        logsContainer.textContent = 'Error fetching logs: ' + error.message;
-                    });
-            }
-            
-            // Load logs on page load
-            window.addEventListener('DOMContentLoaded', function() {
-                refreshLogs();
-                
-                // Auto-refresh logs every 30 seconds (configurable)
-                // To disable auto-refresh, comment out the line below
-                const autoRefreshInterval = 30000; // 30 seconds
-                if (autoRefreshInterval > 0) {
-                    setInterval(refreshLogs, autoRefreshInterval);
-                }
-            });
-        </script>
-    </body>
+            fetch(`fetch_logs.php?name=${encodeURIComponent(containerName)}&lines=100`)
+                .then(r => r.text())
+                .then(data => {
+                    container.innerText = data || 'No log output detected from this container.';
+                    container.style.opacity = '1';
+                    container.scrollTop = container.scrollHeight;
+                })
+                .catch(err => {
+                    container.innerText = "Error syncing logs: " + err.message;
+                    container.style.opacity = '1';
+                });
+        }
+
+        // Auto-refresh logic
+        window.addEventListener('DOMContentLoaded', () => {
+            refreshLogs();
+            setInterval(refreshLogs, 15000); // 15s refresh for performance balance
+        });
+    </script>
+</body>
 </html>

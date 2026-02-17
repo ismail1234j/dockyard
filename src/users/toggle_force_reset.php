@@ -1,7 +1,9 @@
 <?php
+// This isnt client facing
+// client face is at users.php
+
 require_once '../includes/auth.php';
 require_once '../includes/functions.php';
-require_once '../includes/notifications.php';
 
 // Require admin privileges
 require_admin();

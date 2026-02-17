@@ -112,49 +112,126 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <html data-theme="light">
 <head>
     <title>Edit User</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.orange.min.css"/>
-    <link
-        rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.colors.min.css"
-    />
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Pico CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.orange.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.colors.min.css" />
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+
+    <style>
+        article {
+            max-width: 700px;
+            margin: 0 auto;
+            box-shadow: var(--pico-card-sectioning-background-color);
+        }
+        
+        .header-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--pico-spacing);
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: var(--pico-border-radius);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .alert-error {
+            background-color: #f8d7da;
+            color: #842029;
+            border: 1px solid #f5c2c7;
+        }
+
+        .alert-success {
+            background-color: #d1e7dd;
+            color: #0f5132;
+            border: 1px solid #badbcc;
+        }
+
+        .form-footer {
+            margin-top: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+    </style>
 </head>
 <body>
-<div class="container" style="margin-top: 6%">
-    <header>
-        <section>
-            <h1>Edit User: <?php echo htmlspecialchars($user_data['username']); ?></h1>
-            <button class="secondary" onclick="location.href='../users.php';">Back</button>
-        </section>
-    </header>
-    <hr />
-    <main>
-        <section>
-            <?php if (!empty($error_message)): ?>
-                <p style="color: red;"><?php echo htmlspecialchars($error_message); ?></p>
-            <?php endif; ?>
-            <?php if (!empty($success_message)): ?>
-                <p style="color: green;"><?php echo htmlspecialchars($success_message); ?></p>
-            <?php endif; ?>
-            <div class="overflow-auto">
+    <div class="container" style="padding-top: 4rem; padding-bottom: 4rem;">
+        <article>
+            <header>
+                <div class="header-nav">
+                    <hgroup style="margin: 0;">
+                        <h1>Edit User</h1>
+                        <p><?php echo htmlspecialchars($user_data['username']); ?></p>
+                    </hgroup>
+                    <button class="secondary outline" onclick="location.href='../users.php';" style="width: auto;">
+                        <i class="fa fa-arrow-left"></i> Back
+                    </button>
+                </div>
+            </header>
+
+            <main>
+                <!-- PHP Message Handling -->
+                <?php if (!empty($error_message)): ?>
+                    <div class="alert alert-error">
+                        <i class="fa fa-exclamation-circle"></i>
+                        <span><?php echo htmlspecialchars($error_message); ?></span>
+                    </div>
+                <?php endif; ?>
+
+                <?php if (!empty($success_message)): ?>
+                    <div class="alert alert-success">
+                        <i class="fa fa-check-circle"></i>
+                        <span><?php echo htmlspecialchars($success_message); ?></span>
+                    </div>
+                <?php endif; ?>
+
                 <form method="post">
-                    <!-- Add CSRF token field -->
+                    <!-- CSRF Token -->
                     <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
-                    <label for="username">Username</label>
-                    <input type="text" id="username" name="username" value="<?php echo htmlspecialchars($user_data['username']); ?>" required>
-                    <label for="email">Email</label>
-                    <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($user_data['email'] ?? ''); ?>">
-                    <label for="password">New Password (leave blank to keep current)</label>
-                    <input type="password" id="password" name="password" placeholder="Leave blank to keep current password">
-                    <label for="isAdmin" style="padding-bottom: 10px;">
-                        <input type="checkbox" id="isAdmin" name="isAdmin" value="1" <?php echo $user_data['IsAdmin'] ? 'checked' : ''; ?>>
-                        Is Admin?
+
+                    <div class="grid">
+                        <label for="username">
+                            Username
+                            <input type="text" id="username" name="username" value="<?php echo htmlspecialchars($user_data['username']); ?>" required>
+                        </label>
+
+                        <label for="email">
+                            Email Address
+                            <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($user_data['email'] ?? ''); ?>" placeholder="user@example.com">
+                        </label>
+                    </div>
+
+                    <label for="password">
+                        New Password
+                        <input type="password" id="password" name="password" placeholder="••••••••" aria-describedby="pw-helper">
+                        <small id="pw-helper">Leave blank to keep the current password.</small>
                     </label>
-                    <button type="submit">Update User</button>
+
+                    <fieldset>
+                        <label for="isAdmin">
+                            <input type="checkbox" id="isAdmin" name="isAdmin" role="switch" value="1" <?php echo $user_data['IsAdmin'] ? 'checked' : ''; ?>>
+                            Grant Administrator Privileges
+                        </label>
+                    </fieldset>
+
+                    <div class="form-footer">
+                        <button type="submit" class="contrast">
+                            <i class="fa fa-save"></i> Save User Changes
+                        </button>
+                    </div>
                 </form>
-            </div>
-        </section>
-    </main>
-</div>
+            </main>
+        </article>
+    </div>
 </body>
 </html>
