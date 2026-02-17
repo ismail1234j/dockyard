@@ -114,112 +114,184 @@ if (!isset($_SESSION['csrf_token'])) {
 <html data-theme="light">
 <head>
     <title>Force Password Reset</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.orange.min.css"/>
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Pico CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.orange.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.colors.min.css"/>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/>
+
     <style>
         .password-requirements {
-            background-color: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 4px;
-            padding: 1rem;
-            margin-bottom: 1rem;
+            background-color: var(--pico-card-background-color);
+            border: 1px solid var(--pico-muted-border-color);
+            border-radius: var(--pico-border-radius);
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
         }
+        
         .password-requirements h4 {
-            margin-top: 0;
-            margin-bottom: 0.5rem;
+            font-size: 1rem;
+            margin-bottom: 0.75rem;
+            color: var(--pico-heading-color);
         }
+        
         .password-requirements ul {
             margin: 0;
-            padding-left: 1.5rem;
+            padding: 0;
             list-style: none;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.5rem;
         }
+        
         .password-requirements li {
-            margin-bottom: 0.25rem;
-            position: relative;
-            padding-left: 1.5rem;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--pico-muted-color);
+            transition: color 0.3s ease;
         }
+        
         .password-requirements li::before {
-            content: '✕';
-            position: absolute;
-            left: 0;
-            color: #dc3545;
-            font-weight: bold;
+            content: '\f00d'; /* Times */
+            font-family: 'FontAwesome';
+            color: #d93526;
+            width: 1rem;
+            text-align: center;
         }
+        
+        .password-requirements li.valid {
+            color: var(--pico-color);
+        }
+        
         .password-requirements li.valid::before {
-            content: '✓';
-            color: #28a745;
+            content: '\f00c'; /* Check */
+            color: #388e3c;
         }
+
         .session-warning {
             background-color: #fff3cd;
-            border: 1px solid #ffc107;
+            border-left: 4px solid #ffc107;
             color: #856404;
             padding: 1rem;
             border-radius: 4px;
-            margin-bottom: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .error-banner {
+            background-color: #f8d7da;
+            color: #842029;
+            padding: 1rem;
+            border-radius: var(--pico-border-radius);
+            margin-bottom: 1.5rem;
+            border: 1px solid #f5c2c7;
+        }
+
+        article {
+            max-width: 600px;
+            margin: 0 auto;
+            box-shadow: var(--pico-card-sectioning-background-color);
+        }
+
+        .countdown-toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #ffc107;
+            color: #000;
+            padding: 15px 25px;
+            border-radius: 8px;
+            z-index: 10000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-weight: bold;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
     </style>
 </head>
 <body>
-    <div class="container" style="margin-top: 8%;">
-        <h1>Password Reset Required</h1>
-        <hr />
-        
-        <div class="session-warning">
-            <strong>⚠️ Security Notice:</strong> An administrator has required you to reset your password. 
-            You must create a new password before accessing the system. This session will expire in 5 minutes.
-        </div>
-        
-        <?php if ($error_message): ?>
-            <div style="background-color: #f8d7da; color: #842029; padding: 1rem; border-radius: 4px; margin-bottom: 1rem;">
-                <?= htmlspecialchars($error_message) ?>
+    <div class="container" style="padding-top: 4rem; padding-bottom: 4rem;">
+        <article>
+            <header>
+                <hgroup>
+                    <h1>Password Reset</h1>
+                </hgroup>
+            </header>
+
+            <div class="session-warning">
+                <strong><i class="fa fa-exclamation-triangle"></i> Security Notice:</strong> 
+                An administrator has required a password change. You have <strong><span id="timer-display">5:00</span></strong> to complete this action before the session expires.
             </div>
-        <?php endif; ?>
-        
-        <div class="password-requirements">
-            <h4>Password Requirements:</h4>
-            <ul>
-                <li id="req-length">Minimum 8 characters long</li>
-                <li id="req-uppercase">At least one uppercase letter (A-Z)</li>
-                <li id="req-lowercase">At least one lowercase letter (a-z)</li>
-                <li id="req-number">At least one number (0-9)</li>
-                <li id="req-special">At least one special character (!@#$%^&*)</li>
-            </ul>
-        </div>
-        
-        <form method="post" action="">
-            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
             
-            <label>
-                New Password
-                <input type="password" name="new_password" id="new_password" required autocomplete="new-password" />
-            </label>
+            <?php if (isset($error_message) && $error_message): ?>
+                <div class="error-banner">
+                    <i class="fa fa-times-circle"></i> <?= htmlspecialchars($error_message) ?>
+                </div>
+            <?php endif; ?>
             
-            <label>
-                Confirm Password
-                <input type="password" name="confirm_password" id="confirm_password" required autocomplete="new-password" />
-            </label>
+            <section class="password-requirements">
+                <h4>Required Strength:</h4>
+                <ul>
+                    <li id="req-length">8+ characters</li>
+                    <li id="req-uppercase">Uppercase (A-Z)</li>
+                    <li id="req-lowercase">Lowercase (a-z)</li>
+                    <li id="req-number">Number (0-9)</li>
+                    <li id="req-special">Special (!@#$%^&*)</li>
+                </ul>
+            </section>
             
-            <button type="submit" class="btn">Reset Password</button>
-        </form>
-        
-        <p style="margin-top: 1rem; text-align: center;">
-            <a href="../logout.php">Cancel and Logout</a>
-        </p>
+            <form method="post" action="">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
+                
+                <label for="new_password">
+                    New Password
+                    <input type="password" name="new_password" id="new_password" placeholder="New password" required autocomplete="new-password" />
+                </label>
+                
+                <label for="confirm_password">
+                    Confirm New Password
+                    <input type="password" name="confirm_password" id="confirm_password" placeholder="Repeat password" required autocomplete="new-password" />
+                </label>
+                
+                <button type="submit" class="contrast">
+                    <i class="fa fa-shield"></i> Update Password & Access System
+                </button>
+            </form>
+            
+            <footer>
+                <div style="text-align: center;">
+                    <a href="../logout.php" class="secondary">Cancel and Logout</a>
+                </div>
+            </footer>
+        </article>
     </div>
     
     <script>
-        // Auto-logout after 5 minutes
-        let timeRemaining = 300; // 5 minutes in seconds
-        const warningTime = 60; // Show warning at 1 minute
+        // Auto-logout countdown logic
+        let timeRemaining = 300; 
+        const warningTime = 60;
+        const timerDisplay = document.getElementById('timer-display');
         
         const countdownInterval = setInterval(function() {
             timeRemaining--;
             
+            // Update inline timer
+            const mins = Math.floor(timeRemaining / 60);
+            const secs = timeRemaining % 60;
+            timerDisplay.textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+            
             if (timeRemaining === warningTime) {
-                // Show warning at 1 minute remaining
                 const warning = document.createElement('div');
-                warning.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #ffc107; color: #000; padding: 15px; border-radius: 8px; z-index: 10000;';
-                warning.textContent = 'Session will expire in 1 minute. Please complete password reset.';
+                warning.className = 'countdown-toast';
+                warning.innerHTML = '<i class="fa fa-clock-o"></i> 1 minute remaining! Save your changes.';
                 document.body.appendChild(warning);
             }
             
@@ -229,33 +301,36 @@ if (!isset($_SESSION['csrf_token'])) {
             }
         }, 1000);
         
-        // Show real-time password validation
-        document.getElementById('new_password').addEventListener('input', function(e) {
-            const password = e.target.value;
-            const requirements = {
-                length: password.length >= 8,
-                uppercase: /[A-Z]/.test(password),
-                lowercase: /[a-z]/.test(password),
-                number: /[0-9]/.test(password),
-                special: /[^A-Za-z0-9]/.test(password)
+        // Real-time validation
+        const passInput = document.getElementById('new_password');
+        const confirmInput = document.getElementById('confirm_password');
+        
+        passInput.addEventListener('input', function(e) {
+            const val = e.target.value;
+            const reqs = {
+                'req-length': val.length >= 8,
+                'req-uppercase': /[A-Z]/.test(val),
+                'req-lowercase': /[a-z]/.test(val),
+                'req-number': /[0-9]/.test(val),
+                'req-special': /[^A-Za-z0-9]/.test(val)
             };
             
-            // Update visual indicators
-            document.getElementById('req-length').classList.toggle('valid', requirements.length);
-            document.getElementById('req-uppercase').classList.toggle('valid', requirements.uppercase);
-            document.getElementById('req-lowercase').classList.toggle('valid', requirements.lowercase);
-            document.getElementById('req-number').classList.toggle('valid', requirements.number);
-            document.getElementById('req-special').classList.toggle('valid', requirements.special);
+            for (const [id, isValid] of Object.entries(reqs)) {
+                document.getElementById(id).classList.toggle('valid', isValid);
+            }
         });
         
-        // Prevent form submission if passwords don't match
+        // Form Validation
         document.querySelector('form').addEventListener('submit', function(e) {
-            const newPass = document.getElementById('new_password').value;
-            const confirmPass = document.getElementById('confirm_password').value;
-            
-            if (newPass !== confirmPass) {
+            if (passInput.value !== confirmInput.value) {
                 e.preventDefault();
-                alert('Passwords do not match!');
+                confirmInput.setAttribute('aria-invalid', 'true');
+                // Use custom message instead of browser alert
+                const errorBox = document.createElement('div');
+                errorBox.className = 'error-banner';
+                errorBox.innerHTML = '<i class="fa fa-exclamation-circle"></i> Passwords do not match.';
+                this.prepend(errorBox);
+                setTimeout(() => errorBox.remove(), 3000);
             }
         });
     </script>
