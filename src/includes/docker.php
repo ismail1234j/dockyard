@@ -26,7 +26,7 @@ class Docker
     public function start(string $name): array
     {
         $escapedName = $this->validateName($name);
-        $output = shell_exec("bash {$this->scriptPath} start $escapedName 2>&1") ? '';
+        $output = shell_exec("bash {$this->scriptPath} start $escapedName 2>&1") ?: '';
         $success = strpos($output, $name) !== false || empty(trim($output));
         return ['output' => $output, 'success' => $success];
     }
@@ -35,7 +35,7 @@ class Docker
     public function stop(string $name): array
     {
         $escapedName = $this->validateName($name);
-        $output = shell_exec("bash {$this->scriptPath} stop $escapedName 2>&1") ? '';
+        $output = shell_exec("bash {$this->scriptPath} stop $escapedName 2>&1") ?: '';
         $success = strpos($output, $name) !== false || empty(trim($output));
         return ['output' => $output, 'success' => $success];
     }
@@ -45,7 +45,7 @@ class Docker
     {
         $escapedName = $this->validateName($name);
         $lines = max(1, min($lines, 500));
-        $output = shell_exec("bash {$this->scriptPath} logs $escapedName $lines 2>&1") ? '';
+        $output = shell_exec("bash {$this->scriptPath} logs $escapedName $lines 2>&1") ?: '';
         return ['output' => $output, 'success' => true];
     }
 
@@ -53,7 +53,7 @@ class Docker
     public function status(string $name): array
     {
         $escapedName = $this->validateName($name);
-        $output = shell_exec("bash {$this->scriptPath} status $escapedName 2>&1") ? '';
+        $output = shell_exec("bash {$this->scriptPath} status $escapedName 2>&1") ?: '';
         return ['output' => $output, 'success' => true];
     }
 }
