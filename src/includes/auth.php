@@ -23,6 +23,7 @@ header("Permissions-Policy: geolocation=(), microphone=(), camera=()");
 // DB
 
 require_once 'db.php';
+$db = get_db();
 
 // Has their session timed out yet
 if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > 1800)) {

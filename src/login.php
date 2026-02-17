@@ -1,11 +1,8 @@
 <?php
 session_start();
 
-// Database connection and authentication logic
-try {
-    $db = new PDO('sqlite:data/db.sqlite');
-    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION); // Ensure PDO throws exceptions
-    $db->exec('PRAGMA foreign_keys = ON'); // Enable foreign key constraints
+include_once 'includes/db.php';
+$db = get_db();
 
     if (!isset($_SESSION['username']) && !isset($_SESSION['authenticated'])){
         if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -128,9 +125,6 @@ try {
         header('Location: index.php');
         exit;
     }
-} catch (PDOException $e) {
-    $db_error = true; // Set flag for database error
-}
 ?>
 <!DOCTYPE html>
 <html data-theme="light">

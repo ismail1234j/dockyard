@@ -1,6 +1,8 @@
 <?php
 require_once '../includes/auth.php'; // Use centralized auth
 require_once '../includes/functions.php';
+require_once '../includes/db.php';
+$db = get_db();
 
 $containerList = shell_exec("bash ../private/manage_containers.sh list");
 $containers = explode("\n", $containerList);

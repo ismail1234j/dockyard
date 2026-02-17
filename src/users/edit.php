@@ -1,7 +1,9 @@
 <?php
 require_once '../includes/auth.php'; 
 require_once '../includes/functions.php';
-require_admin(); // Ensure only admins can edit users
+require_once '../includes/db.php';
+$db = get_db();
+require_admin();
 
 $error_message = '';
 $success_message = '';

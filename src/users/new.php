@@ -1,10 +1,11 @@
 <?php
-require_once '../includes/auth.php'; // Use centralized auth
+require_once '../includes/auth.php'; 
 require_once '../includes/functions.php';
-require_admin(); // Ensure only admins can create users
+require_admin(); 
 
-// Add new user
-if ($auth) {
+require_once '../includes/db.php';
+$db = get_db();
+
     if ($_SERVER["REQUEST_METHOD"] == "POST") {        
         // Validate CSRF token
             if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
@@ -61,7 +62,6 @@ if ($auth) {
             }
         }
     }
-}
 ?>
 <!DOCTYPE html>
 <html data-theme="light">

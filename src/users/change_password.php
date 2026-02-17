@@ -1,5 +1,7 @@
 <?php
 require_once '../includes/auth.php';
+require_once '../includes/db.php';
+$db = get_db();
 
 $error_message = '';
 $success_message = '';

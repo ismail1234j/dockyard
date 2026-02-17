@@ -1,5 +1,7 @@
 <?php
-require_once 'includes/auth.php'; // Use centralized auth
+require_once 'includes/auth.php';
+require_once 'includes/db.php'; 
+$db = get_db();
 
 // Require admin privileges for user deletion
 require_admin();

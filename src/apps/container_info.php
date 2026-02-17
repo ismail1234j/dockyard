@@ -5,6 +5,7 @@ if (!isset($_GET['name'])) {
 require_once '../includes/db.php';
 require_once '../includes/auth.php'; 
 require_once '../includes/functions.php';
+$db = get_db();
 $name = htmlspecialchars($_GET['name'], ENT_QUOTES, 'UTF-8');
 
 // Check if user has permission to view this container
@@ -270,64 +271,7 @@ $canStop = $isAdmin || check_container_permission($db, $user_id, $name, 'stop');
             const container = document.getElementById('logs-container');
             container.style.opacity = '0.5';
             
-<<<<<<< HEAD
-            function executeAction() {
-                if (!pendingAction) return;
-                
-                closeModal('confirm-modal');
-                showLoadingModal(pendingAction);
-                
-                // Execute the action
-                const url = `action.php?${pendingAction}=${encodeURIComponent(containerName)}`;
-                window.location.href = url;
-            }
-            
-            function showLoadingModal(action) {
-                const modal = document.getElementById('loading-modal');
-                const title = document.getElementById('loading-title');
-                const message = document.getElementById('loading-message');
-                
-                title.textContent = action === 'start' ? 'Starting Container' : 'Stopping Container';
-                message.textContent = `Please wait while the container is ${action === 'start' ? 'starting' : 'stopping'}...`;
-                
-                modal.style.display = 'block';
-            }
-            
-            function closeResultModal() {
-                closeModal('result-modal');
-                location.reload();
-            }
-            
-            function refreshLogs() {
-                const logsContainer = document.getElementById('logs-container');
-                logsContainer.textContent = 'Loading logs...';
-                
-                fetch('action.php?action=logs&name=' + encodeURIComponent(containerName) + '&lines=50')
-                    .then(response => response.text())
-                    .then(data => {
-                        logsContainer.textContent = data || 'No logs available';
-                    })
-                    .catch(error => {
-                        console.error('Error fetching logs:', error);
-                        logsContainer.textContent = 'Error fetching logs: ' + error.message;
-                    });
-            }
-            
-            // Load logs on page load
-            window.addEventListener('DOMContentLoaded', function() {
-                refreshLogs();
-                
-                // Auto-refresh logs every 30 seconds (configurable)
-                // To disable auto-refresh, comment out the line below
-                const autoRefreshInterval = 30000; // 30 seconds
-                if (autoRefreshInterval > 0) {
-                    setInterval(refreshLogs, autoRefreshInterval);
-                }
-            });
-        </script>
-    </body>
-=======
-            fetch(`fetch_logs.php?name=${encodeURIComponent(containerName)}&lines=100`)
+            fetch('action.php?action=logs&name=' + encodeURIComponent(containerName) + '&lines=50')
                 .then(r => r.text())
                 .then(data => {
                     container.innerText = data || 'No log output detected from this container.';
@@ -347,5 +291,4 @@ $canStop = $isAdmin || check_container_permission($db, $user_id, $name, 'stop');
         });
     </script>
 </body>
->>>>>>> b5e7c93863a48cd013af56bfff8616318eaae340
 </html>

@@ -1,6 +1,8 @@
 <?php
 require_once '../includes/auth.php';
 require_once '../includes/functions.php';
+require_once '../includes/db.php';
+$db = get_db();
 
 // Require admin privileges
 require_admin();

@@ -1,6 +1,8 @@
 <?php
-include_once '../includes/auth.php'; // Use centralized auth
+include_once '../includes/auth.php';
 include_once '../includes/functions.php';
+require_once '../includes/db.php';
+$db = get_db();
 
 $action = $_GET['action'] ?? null;
 $name   = $_GET['name'] ?? null;
@@ -48,6 +50,7 @@ switch ($action) {
         $success = strpos($output, $name) !== false || empty(trim($output));
         break;
 
+    // http://URL:Port/apps/action.php?action=logs&name=app&lines=2
     case 'logs':
         $lines = isset($_GET['lines']) ? intval($_GET['lines']) : 30;
         $lines = max(1, min($lines, 500));

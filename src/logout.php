@@ -1,12 +1,10 @@
 <?php
 session_start();
+include_once 'includes/db.php';
+$db = get_db();
 
 // Remove session from database
 try {
-    $db = new PDO('sqlite:data/db.sqlite');
-    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $db->exec('PRAGMA foreign_keys = ON');
-    
     $sessionId = session_id();
     if ($sessionId) {
         $stmt = $db->prepare('DELETE FROM user_sessions WHERE SessionID = :session_id');

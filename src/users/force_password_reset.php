@@ -1,4 +1,6 @@
 <?php
+include_once '../includes/db.php';
+
 session_start();
 
 // Check if this is a valid force reset session
@@ -21,13 +23,7 @@ if (!isset($_SESSION['force_reset_time']) || (time() - $_SESSION['force_reset_ti
 $_SESSION['force_reset_time'] = time();
 
 // Database connection
-try {
-    $db = new PDO('sqlite:../data/db.sqlite');
-    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $db->exec('PRAGMA foreign_keys = ON');
-} catch (PDOException $e) {
-    die("Database connection failed. Please try again later.");
-}
+$db = get_db();
 
 $error_message = '';
 $success = false;

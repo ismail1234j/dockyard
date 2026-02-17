@@ -11,6 +11,8 @@
  * - Set check_links=true to test container URLs
  */
 
+include_once '../includes/db.php';
+
 // Path to the container management script
 $scriptPath = dirname(__DIR__) . '/private/manage_containers.sh';
 if (!file_exists($scriptPath)) {
@@ -18,14 +20,7 @@ if (!file_exists($scriptPath)) {
 }
 
 // Initialize database connection
-try {
-    $db = new PDO('sqlite:' . dirname(__DIR__) . '/data/db.sqlite');
-    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    // Enable foreign key constraints
-    $db->exec('PRAGMA foreign_keys = ON');
-} catch (PDOException $e) {
-    die("Database connection failed: " . $e->getMessage());
-}
+$db = get_db();
 
 // Check if we should check container URLs
 $check_links = isset($_GET['check_links']) && $_GET['check_links'] === 'true';
