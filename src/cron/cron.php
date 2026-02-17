@@ -152,6 +152,8 @@ foreach ($containers as $container) {
             
             $url = !empty($existing['Url']) ? $existing['Url'] : $url;
             
+            /*
+
             // Update container ID if we have it and it's not set
             if (!empty($container_id) && empty($existing['ContainerID'])) {
                 $stmt = $db->prepare('UPDATE apps SET ContainerID = :containerId WHERE ID = :id');
@@ -160,6 +162,8 @@ foreach ($containers as $container) {
                 $stmt->execute();
             }
             
+            */
+
             // Check URL availability if requested
             $pingStatus = null;
             $pingTime = null;
