@@ -1,5 +1,4 @@
 <?php
-// Remove duplicate session management and use centralized auth
 require_once '../includes/auth.php';
 
 $error_message = '';
@@ -57,7 +56,6 @@ if ($auth) {
     />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<?php if ($auth) : ?>
     <body>
     <div class="container" style="margin-top: 6%">
         <header>
@@ -97,22 +95,3 @@ if ($auth) {
     </div>
     </body>
 </html>
-<?php else : ?>
-    <body>
-    <div class="container" style="margin-top: 6%">
-        <header>
-            <section>
-                <h1>Change Password</h1>
-                <button class="secondary" onclick="location.href='../users.php';">Back</button>
-            </section>
-        </header>
-        <hr />
-        <main>
-            <section>
-                <p>Unauthorized</p>
-            </section>
-        </main>
-    </div>
-    </body>
-</html>
-<?php endif; ?>
