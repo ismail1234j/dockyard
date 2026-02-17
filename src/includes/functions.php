@@ -90,7 +90,7 @@ function check_container_permission(PDO $db, int $user_id, string $container_nam
  * 
  * @param PDO $db Database connection
  * @param int $user_id User ID
- * @return array Array of container names
+ * @return array<string> array of container names the user has access to
  */
 function get_user_containers(PDO $db, int $user_id): array {
     
