@@ -56,4 +56,15 @@ class Docker
         $output = shell_exec("bash {$this->scriptPath} status $escapedName 2>&1") ?: '';
         return ['output' => $output, 'success' => true];
     }
+
+    public function inspect(string $name): array
+    {
+        $escapedName = $this->validateName($name);
+        $output = shell_exec("docker inspect $escapedName 2>&1") ?: '';
+        $data = json_decode($output, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new RuntimeException('Failed to parse Docker inspect output');
+        }
+        return $data;
+    }
 }
