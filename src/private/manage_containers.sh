@@ -10,22 +10,25 @@ if [[ ! -x "$DOCKER_BIN" ]]; then
     exit 1
 fi
 
-log_action() {
-    local ACTION="$1"
-    local CONTAINER="$2"
-    local RESULT="$3"
-    local EXEC_USER
-    local TIMESTAMP
+# Move logging to PHP for now...
 
-    EXEC_USER=$(whoami)
-    TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+log_action() {
+    # local ACTION="$1"
+    # local CONTAINER="$2"
+    # local RESULT="$3"
+    # local EXEC_USER
+    # local TIMESTAMP
+
+    # EXEC_USER=$(whoami)
+    # TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
 
     # Ensure log path exists BEFORE writing
-    mkdir -p "$(dirname "$LOG_FILE")"
-    touch "$LOG_FILE"
-    chmod 640 "$LOG_FILE"
+    # mkdir -p "$(dirname "$LOG_FILE")"
+    # touch "$LOG_FILE"
+    # chmod 640 "$LOG_FILE"
 
-    echo "$TIMESTAMP | USER=$EXEC_USER | CONTAINER=$CONTAINER | ACTION=$ACTION | RESULT=$RESULT" >> "$LOG_FILE"
+    # echo "$TIMESTAMP | USER=$EXEC_USER | CONTAINER=$CONTAINER | ACTION=$ACTION | RESULT=$RESULT" >> "$LOG_FILE"
+    echo "logging disabled"
 }
 
 # Function to validate container name to prevent command injection
