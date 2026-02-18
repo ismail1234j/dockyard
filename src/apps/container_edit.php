@@ -4,32 +4,29 @@ require_once '../includes/functions.php';
 require_once '../includes/db.php';
 $db = get_db();
 
-// Require admin privileges
+$success_message = '';
+$error_message = '';
+
 require_admin();
 
 if (!isset($_GET['name'])) {
-    header('Location: ../apps.php');
+    json_error("Container name is required");
     exit();
 }
 
 $containerName = $_GET['name'];
 $escapedName = escapeshellarg($containerName);
 
-// Get container details from Docker
-$containerInfo = shell_exec("docker inspect " . $escapedName . " 2>&1");
-$containerData = json_decode($containerInfo, true);
+$docker = new Docker();
+$containerData = $docker->inspect($containerName);
 
 if (!$containerData || empty($containerData[0])) {
-    header('Location: ../apps.php?error=container_not_found');
-    exit();
+    $error_message = "Container '$containerName' not found.";
 }
 
 $container = $containerData[0];
 $currentName = ltrim($container['Name'], '/');
 $containerId = $container['Id'];
-
-$success_message = '';
-$error_message = '';
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -48,10 +45,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error_message = "New name is the same as current name.";
         } else {
             // Rename the container
-            $renameCmd = "docker rename " . escapeshellarg($currentName) . " " . escapeshellarg($newName) . " 2>&1";
-            $output = shell_exec($renameCmd);
-            
-            if (strpos($output, 'Error') === false && empty(trim($output))) {
+            try {
+                $result = $docker->rename($currentName, $newName);
+                $output = $result['output'];
+                $success = $result['success'];
+            } catch (RuntimeException $e) {
+                $output = '';
+                $success = false;
+                $error_message = "Error renaming container: " . htmlspecialchars($e->getMessage());
+            }
+
+            if ($success) {
                 // Update database
                 try {
                     $stmt = $db->prepare('UPDATE apps SET ContainerName = :new_name WHERE ContainerName = :old_name');
@@ -63,10 +67,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $currentName = $newName;
                     $containerName = $newName;
                 } catch (PDOException $e) {
-                    $error_message = "Container renamed in Docker but failed to update database: " . $e->getMessage();
+                    $error_message = "Container renamed in Docker but failed to update database: " . htmlspecialchars($e->getMessage());
                 }
             } else {
-                $error_message = "Failed to rename container: " . htmlspecialchars($output);
+                if (empty($error_message)) {
+                    $error_message = "Failed to rename container: " . htmlspecialchars($output);
+                }
             }
         }
     }
@@ -199,7 +205,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <footer>
             <hr />
             <section>
-                <p>&copy; 2024 Container Manager</p>
             </section>
         </footer>
     </div>
