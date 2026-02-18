@@ -13,18 +13,15 @@ $name   = $_GET['name'] ?? null;
 $allowedActions = ['start', 'stop', 'logs', 'status'];
 
 if (!in_array($action, $allowedActions, true) || empty($name)) {
-    header('Location: ../apps.php?error=invalid_request');
-    exit();
+    json_error("Invalid action or container name");
 }
 
 if (!preg_match('/^[a-zA-Z0-9_.-]{1,64}$/', $name)) {
-    header('Location: ../apps.php?error=invalid_container');
-    exit();
+    json_error("Invalid container name format");
 }
 
 if (!$user_id || !check_container_permission($db, $user_id, $name, $action)) {
-    header('Location: ../apps.php?error=unauthorized');
-    exit();
+    json_error("You do not have permission to perform this action on the container");
 }
 
 $escapedName = escapeshellarg($name);
@@ -84,8 +81,7 @@ switch ($action) {
         exit();
 
     default:
-        header('Location: container_info.php?name=' . urlencode($name) . '&error=invalid_action');
-        exit();
+        json_error("Invalid action");
 }
 
 ?>
