@@ -67,4 +67,12 @@ class Docker
         }
         return $data;
     }
+
+    public function rename(string $oldName, string $newName): array {
+        $escapedOld = $this->validateName($oldName);
+        $escapedNew = $this->validateName($newName);
+        $output = shell_exec("docker rename $escapedOld $escapedNew 2>&1") ?: '';
+        $success = strpos($output, 'Error') === false && empty(trim($output));
+        return ['output' => $output, 'success' => $success];    
+    }
 }
