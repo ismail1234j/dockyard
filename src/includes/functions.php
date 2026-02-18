@@ -124,4 +124,18 @@ function get_user_containers(PDO $db, int $user_id): array {
     }
 }
 
-?>
+/**
+ * Function to return a JSON error response and exit
+ * 
+ * @param string $message Error message to return
+ * @param int $statusCode HTTP status code (default 400)
+*/
+function json_error(string $message, int $statusCode = 400): void {
+    http_response_code($statusCode);
+    header('Content-Type: application/json');
+    echo json_encode([
+        'success' => false,
+        'error' => $message
+    ]);
+    exit();
+}
