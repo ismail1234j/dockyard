@@ -3,6 +3,7 @@ require_once '../includes/auth.php';
 require_once '../includes/functions.php';
 require_once '../includes/db.php';
 require_once '../includes/docker.php';
+require_once 'templates/list.php';
 
 $db = get_db();
 $docker = new Docker();
@@ -19,7 +20,7 @@ function respond_error($msg) {
 $action = $_GET['action'] ?? null;
 $name   = $_GET['name'] ?? null;
 
-$allowedActions = ['start', 'stop', 'logs', 'status'];
+$allowedActions = ['start', 'stop', 'logs', 'status', 'table'];
 
 if (!in_array($action, $allowedActions, true) || empty($name)) {
     respond_error("Invalid action or container name");
@@ -67,6 +68,13 @@ switch ($action) {
         $result = $docker->status($name);
         $output = $result['output'];
         echo $output;
+        exit();
+    // this case has a small quirk, because of the checks above you need something in the name param
+    // but it won't be used, so we can just pass a dummy value when requesting the table
+    // http://URL:Port/apps/action.php?action=table&name=anything
+    case 'table':
+        $table = new clist();
+        $table->render();
         exit();
 
     default:
