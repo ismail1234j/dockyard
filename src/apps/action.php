@@ -7,21 +7,32 @@ require_once '../includes/docker.php';
 $db = get_db();
 $docker = new Docker();
 
+function respond_error($msg) {
+    if (isset($_SERVER['HTTP_HX_REQUEST'])) {
+        htmx_error($msg);
+    } else {
+        json_error($msg);
+    }
+    exit();
+}
+
 $action = $_GET['action'] ?? null;
 $name   = $_GET['name'] ?? null;
 
 $allowedActions = ['start', 'stop', 'logs', 'status'];
 
 if (!in_array($action, $allowedActions, true) || empty($name)) {
-    json_error("Invalid action or container name");
+    respond_error("Invalid action or container name");
 }
 
 if (!preg_match('/^[a-zA-Z0-9_.-]{1,64}$/', $name)) {
-    json_error("Invalid container name format");
+    respond_error("Invalid container name format");
 }
 
-if (!$user_id || !check_container_permission($db, $user_id, $name, $action)) {
-    json_error("You do not have permission to perform this action on the container");
+if (empty($_SESSION['isAdmin']) || $_SESSION['isAdmin'] !== true) {
+    if (!$user_id || !check_container_permission($db, $user_id, $name, $action)) {
+        respond_error("You do not have permission to perform this action on the container");
+    }
 }
 
 $escapedName = escapeshellarg($name);
@@ -31,21 +42,12 @@ $success = false;
 
 switch ($action) {
     case 'start':
-        /* Outdated shell process, use Docker class methods instead
-        $output = shell_exec("bash $scriptPath start $escapedName 2>&1");
-        $success = strpos($output, $name) !== false || empty(trim($output));
-        */
         $result = $docker->start($name);
         $output = $result['output'];
         $success = $result['success'];
         break;
 
     case 'stop':
-        /* Outdated shell process, use Docker class methods instead
-        $output = shell_exec("bash $scriptPath stop $escapedName 2>&1");
-        $success = strpos($output, $name) !== false || empty(trim($output));
-        break;
-        */
         $result = $docker->stop($name);
         $output = $result['output'];
         $success = $result['success'];
@@ -53,14 +55,6 @@ switch ($action) {
 
     // http://URL:Port/apps/action.php?action=logs&name=app&lines=2
     case 'logs':
-        /* Outdated shell process, use Docker class methods instead
-        $lines = isset($_GET['lines']) ? intval($_GET['lines']) : 30;
-        $lines = max(1, min($lines, 500));
-        $output = shell_exec("bash $scriptPath logs $escapedName $lines 2>&1");
-        header('Content-Type: text/plain; charset=UTF-8');
-        echo $output;
-        exit();
-        */
         $lines = isset($_GET['lines']) ? intval($_GET['lines']) : 30;
         $lines = max(1, min($lines, 500));
         $result = $docker->logs($name, $lines);
@@ -70,18 +64,35 @@ switch ($action) {
         exit();
 
     case 'status':
-        /* Outdated shell process, use Docker class methods instead
-        $output = shell_exec("bash $scriptPath status $escapedName 2>&1");
-        echo $output;
-        exit();
-        */
         $result = $docker->status($name);
         $output = $result['output'];
         echo $output;
         exit();
 
     default:
-        json_error("Invalid action");
+        respond_error("Invalid action");
+}
+
+if (isset($_SERVER['HTTP_HX_REQUEST'])) {
+    if ($success) {
+        echo '<div class="pico-background-green-100 pico-color-green-900"
+     style="padding: 0.75rem 1rem; border-radius: 8px; margin-top: 1rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+    <i class="fa fa-check-circle"></i>
+    <span>Container action completed successfully.</span>
+</div>
+';
+    } else {
+        htmx_error("Error: " . htmlspecialchars($output));
+    }
+    exit();
+} else {
+    if ($success) {
+        header('Content-Type: application/json');
+        echo json_encode(['success' => true, 'message' => 'Container action completed successfully.']);
+    } else {
+        json_error("Error: " . $output);
+    }
+    exit();
 }
 
 ?>

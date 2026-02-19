@@ -1,5 +1,33 @@
 <?php
 
+/*
+
+class AppError
+{
+    public string $message;
+    public int $code;
+
+    public function __construct(string $message, int $code = 400)
+    {
+        $this->message = $message;
+        $this->code = $code;
+    }
+
+    public function json(string $message, int $statusCode = 400): void {
+        http_response_code($statusCode);
+        header('Content-Type: application/json');
+        echo json_encode([
+            'success' => false,
+            'error' => $message
+        ]);
+        exit();
+    }
+
+
+}
+
+*/
+
 /// Function to display a modal for any argument passed to it
 function Modal(string $title, string $message): void {
         echo <<<HTML
@@ -137,5 +165,17 @@ function json_error(string $message, int $statusCode = 400): void {
         'success' => false,
         'error' => $message
     ]);
+    exit();
+}
+
+/**
+ * Function to return an HTMX error response and exit
+ * 
+ * @param string $msg Error message to return
+ * @param int $status HTTP status code (default 400)
+*/
+function htmx_error($msg, $status = 400) {
+    http_response_code($status);
+    echo '<div class="pico-background-red-200" style="padding:0.5rem;">' . htmlspecialchars($msg) . '</div>';
     exit();
 }
