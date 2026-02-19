@@ -1,0 +1,96 @@
+article {
+    max-width: 1000px;
+    margin: 0 auto;
+    box-shadow: var(--pico-card-sectioning-background-color);
+}
+
+.header-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--pico-spacing);
+}
+
+/* Status Badge Styling */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 16px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 1rem;
+}
+
+.status-running { background-color: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+.status-exited, .status-stopped { background-color: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
+.status-created, .status-unknown { background-color: #fff3e0; color: #ef6c00; border: 1px solid #ffe0b2; }
+
+.action-group {
+    display: flex;
+    gap: 12px;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.action-btn {
+    width: auto;
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Logs Section */
+.logs-section {
+    margin-top: 2rem;
+    background: var(--pico-card-sectioning-background-color);
+    border-radius: var(--pico-border-radius);
+    padding: 1.5rem;
+    border: 1px solid var(--pico-muted-border-color);
+}
+
+.logs-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.logs-container {
+    background-color: #0d1117;
+    color: #d1d5db;
+    padding: 1.25rem;
+    border-radius: 8px;
+    font-family: 'Fira Code', 'Courier New', monospace;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    max-height: 500px;
+    overflow-y: auto;
+    border: 1px solid #30363d;
+}
+
+/* Spinner for loading modal */
+.loader-spinner {
+    width: 48px;
+    height: 48px;
+    border: 5px solid var(--pico-muted-border-color);
+    border-bottom-color: var(--pico-primary);
+    border-radius: 50%;
+    display: inline-block;
+    box-sizing: border-box;
+    animation: rotation 1s linear infinite;
+}
+
+@keyframes rotation {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Confirmation Dialog Styles */
+dialog article {
+    max-width: 450px;
+}

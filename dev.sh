@@ -21,4 +21,4 @@ php src/setup.php
 
 # Start PHP built-in server
 echo "Starting PHP server on http://localhost:8000"
-php -S localhost:8000 -t ./src
+php -S 0.0.0.0:8000 -t ./src

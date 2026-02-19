@@ -51,7 +51,7 @@ case "$1" in
         validate_container_name "$CONTAINER_NAME"
         RESULT=$($DOCKER_BIN start "$CONTAINER_NAME" 2>&1)
         STATUS=$?
-        log_action "START" "$CONTAINER_NAME" "$RESULT"
+        # log_action "START" "$CONTAINER_NAME" "$RESULT"
         echo "$RESULT"
         exit $STATUS
         ;;
@@ -66,7 +66,7 @@ case "$1" in
         validate_container_name "$CONTAINER_NAME"
         RESULT=$($DOCKER_BIN stop "$CONTAINER_NAME" 2>&1)
         STATUS=$?
-        log_action "STOP" "$CONTAINER_NAME" "$RESULT"
+        # log_action "STOP" "$CONTAINER_NAME" "$RESULT"
         echo "$RESULT"
         exit $STATUS
         ;;
@@ -81,7 +81,7 @@ case "$1" in
         validate_container_name "$CONTAINER_NAME"
         RESULT=$($DOCKER_BIN inspect -f '{{.State.Status}}' "$CONTAINER_NAME" 2>&1)
         STATUS=$?
-        log_action "STATUS" "$CONTAINER_NAME" "$RESULT"
+        # log_action "STATUS" "$CONTAINER_NAME" "$RESULT"
         echo "$RESULT"
         exit $STATUS
         ;;
@@ -108,7 +108,7 @@ case "$1" in
 
         RESULT=$(echo "$FULL_LOGS" | tail -n "$LINES")
 
-        log_action "LOGS" "$CONTAINER_NAME" "Retrieved last $LINES lines"
+        # log_action "LOGS" "$CONTAINER_NAME" "Retrieved last $LINES lines"
         echo "$RESULT"
         exit $STATUS
         ;;
@@ -116,12 +116,12 @@ case "$1" in
         # List all containers with their status
         RESULT=$($DOCKER_BIN ps -a --format "{{.Names}},{{.Status}},{{.Image}},{{.Ports}}" 2>&1)
         STATUS=$?
-        log_action "LIST" "ALL" "Listed all containers"
+        # log_action "LIST" "ALL" "Listed all containers"
         echo "$RESULT"
         exit $STATUS
         ;;
     *)
-        log_action "INVALID" "${2:-unknown}" "Invalid action: $1"
+        # log_action "INVALID" "${2:-unknown}" "Invalid action: $1"
         echo "Usage: $0 {start|stop|status|logs|list} [container_name] [log_lines]"
         exit 1
         ;;
