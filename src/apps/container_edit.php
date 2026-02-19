@@ -119,7 +119,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <header>
             <section>
                 <h1>Edit Container</h1>
-                <button class="secondary" onclick="location.href='container_info.php?name=<?= urlencode($containerName) ?>';">Back to Container</button>
+                <button class="secondary" onclick="location.href='info.php?name=<?= urlencode($containerName) ?>';">Back to Container</button>
             </section>
         </header>
         <hr />
