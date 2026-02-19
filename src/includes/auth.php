@@ -115,6 +115,8 @@ if (!isset($_SESSION['csrf_token']) && $auth) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 
+$isAdmin = isset($_SESSION['isAdmin']) && $_SESSION['isAdmin'] === true;
+
 // Function to check admin privileges
 function require_admin(): void {
     if (empty($_SESSION['isAdmin']) || $_SESSION['isAdmin'] !== true) {
