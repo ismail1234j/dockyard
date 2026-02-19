@@ -82,7 +82,7 @@ $canStop = $isAdmin || check_container_permission($db, $user_id, $name, 'stop');
                 <!-- Controls -->
                 <div class="action-group">
                     <?php if ($isAdmin): ?>
-                    <button class="action-btn warning" onclick="location.href='container_edit.php?name=<?php echo urlencode($name); ?>';">
+                    <button class="action-btn warning" onclick="location.href='edit.php?name=<?php echo urlencode($name); ?>';">
                         <i class="fa fa-pencil"></i> Configure
                     </button>
                     <?php endif; ?>
