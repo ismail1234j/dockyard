@@ -56,7 +56,7 @@ class clist
                 echo "<td>-</td>";
             }
 
-            echo "<td><button onclick=\"location.href='apps.php?info=" . urlencode($name) . "';\">Info</button></td>
+            echo "<td><button onclick=\"location.href='/apps/info.php?name=" . urlencode($name) . "';\">Info</button></td>
                   </tr>";
         }
     }

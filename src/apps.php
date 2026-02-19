@@ -1,15 +1,8 @@
 <?php
 require_once 'includes/auth.php';
-require_once 'includes/functions.php';
 
 $isAdmin = isset($_SESSION['isAdmin']) && $_SESSION['isAdmin'] === true;
 $user_id = $_SESSION['user_id'] ?? null;
-
-if (isset($_GET['info'])) {
-    $name = htmlspecialchars($_GET['info']);
-    header("Location: apps/info.php?name=$name");
-    exit();
-}
 
 ?>
 <!DOCTYPE html>
