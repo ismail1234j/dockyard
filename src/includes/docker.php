@@ -75,4 +75,10 @@ class Docker
         $success = strpos($output, 'Error') === false && empty(trim($output));
         return ['output' => $output, 'success' => $success];    
     }
+
+    public function list(): array {
+        $output = shell_exec("bash {$this->scriptPath} list 2>&1") ?: '';
+        $containers = explode("\n", $output);
+        return $containers;
+    }
 }
