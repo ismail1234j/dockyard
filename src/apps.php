@@ -7,7 +7,7 @@ $user_id = $_SESSION['user_id'] ?? null;
 
 if (isset($_GET['info'])) {
     $name = htmlspecialchars($_GET['info']);
-    header("Location: apps/container_info.php?name=$name");
+    header("Location: apps/info.php?name=$name");
     exit();
 }
 
@@ -15,7 +15,7 @@ if (isset($_GET['info'])) {
 <!DOCTYPE html>
 <html data-theme="light">
 <head>
-    <title>Container Manager</title>
+    <title>Containers</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
@@ -139,13 +139,13 @@ if (isset($_GET['info'])) {
     </style>
 </head>
 <body>
+    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js"></script>
     <div class="container" style="padding-top: 4rem; padding-bottom: 4rem;">
         <article>
             <header>
                 <div class="header-nav">
                     <hgroup style="margin: 0;">
-                        <h1>Container Manager</h1>
-                        <p>Real-time instance monitoring and control</p>
+                        <h1>Containers</h1>
                     </hgroup>
                     <button class="secondary outline" onclick="location.href='index.php';" style="width: auto;">
                         <i class="fa fa-arrow-left"></i> Back
@@ -157,8 +157,11 @@ if (isset($_GET['info'])) {
                 <section>
                     <div class="table-header">
                         <h2 style="font-size: 1.25rem; margin: 0;"><i class="fa fa-cubes"></i> Active Containers</h2>
-                        <button class="refresh-table secondary" onclick="refreshTable()">
-                            <i class="fa fa-refresh"></i> Refresh List
+                        <button class="refresh-table secondary"
+                                hx-get="/apps/action.php?action=table&name=dummy"
+                                hx-target="#container-table-body"
+                                hx-swap="innerHTML">
+                            <i class="fa fa-refresh"></i> Refresh Table
                         </button>
                     </div>
                     
@@ -174,8 +177,11 @@ if (isset($_GET['info'])) {
                                     <th scope="col" style="text-align: right;">Management</th>
                                 </tr>
                             </thead>
-                            <tbody id="container-table-body">
-                                <!-- Data populated by refreshTable() -->
+                            <tbody id="container-table-body"
+                                hx-get="/apps/action.php?action=table&name=dummy"
+                                hx-trigger="load"
+                                hx-swap="innerHTML">
+                                <!-- Data populated automatically by HTMX on page load -->
                             </tbody>
                         </table>
                     </div>
@@ -191,13 +197,6 @@ if (isset($_GET['info'])) {
     <script>
         // Use the CSRF token from PHP
         window.csrfToken = <?php echo json_encode($_SESSION['csrf_token'] ?? ''); ?>;
-    </script>
-    <script src="/functions.js"></script>
-    <script>
-        // Initial load
-        if (typeof refreshTable === 'function') {
-            refreshTable();
-        }
     </script>
 </body>
 </html>
