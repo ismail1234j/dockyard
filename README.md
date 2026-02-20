@@ -73,7 +73,7 @@ volumes:
 - Recommended for self-hosting and quick local setups; not a replacement for full-featured orchestration UIs.
 
 ## License
-See LICENSE (if included in the repo).
+See LICENSE file
 
 ## Changelog
 See CHANGELOG.md
