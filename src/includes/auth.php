@@ -4,46 +4,128 @@
    - Login.php doesn't use this (for obvious reasons)
    - All admin facing pages must call require_admin()
 */
-
-session_start();
-
-function redir_login(): void {
-    header('Location: /login.php');
-    exit;
-}
-
-// Security headers
 header("X-Frame-Options: DENY");
 header("X-Content-Type-Options: nosniff");
-header("X-XSS-Protection: 1; mode=block");
-header("Referrer-Policy: same-origin");
 header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com; img-src 'self' data:; connect-src 'self'");
 header("Permissions-Policy: geolocation=(), microphone=(), camera=()");
 
-// DB
-
+require_once __DIR__ . '/../vendor/autoload.php';
 require_once 'db.php';
 $db = get_db();
 
-// Has their session timed out yet
+use Jumbojett\OpenIDConnectClient;
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > 1800)) {
-    // last request was more than 30 minutes ago
-    session_unset();     // unset session
-    session_destroy();   // destroy session data
-    // Redir to login page
-    redir_login();
+    session_unset();
+    session_destroy();
+    header('Location: /login.php'); 
     exit;
 }
 
-$_SESSION['LAST_ACTIVITY'] = time(); // update last activity time stamp
+/**
+ * Upsert??? local user from OIDC identity
+ * Admin is always taken from OIDC group membership
+ */
+function sync_oidc_user(PDO $db, string $username, ?string $email, bool $oidcIsAdmin): array {
+    $stmt = $db->prepare('SELECT ID, username, email, IsAdmin FROM users WHERE username = :username LIMIT 1');
+    $stmt->bindValue(':username', $username, PDO::PARAM_STR);
+    $stmt->execute();
+    $existing = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// here we check if a password reset has been mandated
-// if so then redir to logout
-if (isset($_SESSION['force_reset_session']) && $_SESSION['force_reset_session'] === true) {
-    // Allow access only to force_password_reset.php and logout.php
-    $currentPage = basename($_SERVER['PHP_SELF']);
-    if ($currentPage !== 'force_password_reset.php' && $currentPage !== 'logout.php') {
-        header('Location: /users/force_password_reset.php');
+    $isAdminInt = $oidcIsAdmin ? 1 : 0;
+
+    if ($existing) {
+        // OIDC is the only source of truth for admin role
+        $upd = $db->prepare('UPDATE users SET email = :email, IsAdmin = :is_admin WHERE ID = :id');
+        $upd->bindValue(':email', $email, PDO::PARAM_STR);
+        $upd->bindValue(':is_admin', $isAdminInt, PDO::PARAM_INT);
+        $upd->bindValue(':id', (int)$existing['ID'], PDO::PARAM_INT);
+        $upd->execute();
+
+        $existing['email'] = $email;
+        $existing['IsAdmin'] = $isAdminInt;
+        return $existing;
+    }
+
+    // New OIDC users are normal unless in admin group
+    // Basically how it was before
+    // We use a random password, users will never log in with it but it satisfies the DB schema
+    $placeholderPassword = password_hash(bin2hex(random_bytes(32)), PASSWORD_DEFAULT);
+    $ins = $db->prepare('
+        INSERT INTO users (username, password, email, IsAdmin, force_password_reset)
+        VALUES (:username, :password, :email, :is_admin, 0)
+    ');
+    $ins->bindValue(':username', $username, PDO::PARAM_STR);
+    $ins->bindValue(':password', $placeholderPassword, PDO::PARAM_STR);
+    $ins->bindValue(':email', $email, PDO::PARAM_STR);
+    $ins->bindValue(':is_admin', $isAdminInt, PDO::PARAM_INT);
+    $ins->execute();
+
+    return [
+        'ID' => (int)$db->lastInsertId(),
+        'username' => $username,
+        'email' => $email,
+        'IsAdmin' => $isAdminInt,
+    ];
+}
+
+// OIDC flow
+if (!isset($_SESSION['authenticated'])) {
+    try {
+        $oidc = new OpenIDConnectClient(
+            "https://auth.ismailj.eu.org/", 
+            "54b7bad7-ed95-4361-8cb5-cd15512dc15b",
+            "vHuGEg838ZQqma709nInQA5DruD3DYvH"
+        );
+
+        $oidc->addScope(['openid', 'profile', 'email', 'groups']);
+        
+        // Dev only
+        // Todo: Make hostname into a config option
+        $oidc->setRedirectURL('http://localhost:8001/index.php');
+
+        // Jumbojett's lib does the rest here, no need for a callback page or anything
+        $oidc->authenticate();
+
+        $userInfo = $oidc->requestUserInfo();
+
+        // Sync OIDC to Session
+        $oidcUsername = $userInfo->preferred_username ?? ($userInfo->name ?? 'User');
+        $oidcEmail = $userInfo->email ?? null;
+        $oidcIsAdmin = isset($userInfo->groups) && in_array('dy_admin', (array)$userInfo->groups, true);
+
+        $localUser = sync_oidc_user($db, $oidcUsername, $oidcEmail, $oidcIsAdmin);
+
+        $_SESSION['authenticated'] = true;
+        $_SESSION['oidc_sub'] = (string)($userInfo->sub ?? '');
+        $_SESSION['user_id'] = (int)$localUser['ID'];   // keep local DB ID
+        $_SESSION['username'] = $localUser['username'];
+        $_SESSION['email'] = $localUser['email'];
+        $_SESSION['isAdmin'] = ((int)$localUser['IsAdmin'] === 1);
+        
+        // Admin check
+        // Todo: make this user definable
+        $_SESSION['isAdmin'] = isset($userInfo->groups) && in_array('dy_admin', (array)$userInfo->groups);
+
+        if (!isset($_SESSION['csrf_token'])) {
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+        }
+    } catch (Exception $e) {
+        error_log("OIDC Auth Error: " . $e->getMessage());
+        die("Authentication failed. Please try again later.");
+    }
+}
+
+$_SESSION['LAST_ACTIVITY'] = time();
+$isAdmin = isset($_SESSION['isAdmin']) && $_SESSION['isAdmin'] === true;
+
+function require_admin(): void {
+    if (empty($_SESSION['isAdmin']) || $_SESSION['isAdmin'] !== true) {
+        header('Location: /index.php?error=unauthorized');
         exit;
     }
 }
@@ -66,122 +148,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['csrf_token'])) {
     }
 }
 
-// Auth Check
-$auth = false;
-if (!empty($_SESSION['username']) && !empty($_SESSION['authenticated'])) {
-    // set auth bool
-    $auth = true;
-    
-    // check session exists in database (for force logout functionality)
-    try {
-        $sessionId = session_id();
-        $userId = $_SESSION['user_id'] ?? null;
-        
-        if ($userId && $sessionId) {
-            $stmt = $db->prepare('SELECT ID FROM user_sessions WHERE UserID = :user_id AND SessionID = :session_id');
-            $stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
-            $stmt->bindParam(':session_id', $sessionId, PDO::PARAM_STR);
-            $stmt->execute();
-            
-            // If session not found in database, it was invalidated (force logged out)
-            if (!$stmt->fetch()) {
-                // Clear session and redirect to login
-                session_unset();
-                session_destroy();
-                redir_login();
-                exit;
-            }
-            
-            // Update last activity in db
-            $stmt = $db->prepare('UPDATE user_sessions SET LastActivity = CURRENT_TIMESTAMP WHERE SessionID = :session_id');
-            $stmt->bindParam(':session_id', $sessionId, PDO::PARAM_STR);
-            $stmt->execute();
-        }
-    } catch (PDOException $e) {
-        // Log error but don't block user if session check fails
-        error_log("Session validation error: " . $e->getMessage());
-    }
-} else {
-    $auth = false;
-}
-
-// If not authenticated, redirect to login
-if (!$auth) {
-    redir_login();
-}
-
-// Generate CSRF token if not exists
-if (!isset($_SESSION['csrf_token']) && $auth) {
-    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-}
-
-$isAdmin = isset($_SESSION['isAdmin']) && $_SESSION['isAdmin'] === true;
-
-// Function to check admin privileges
-function require_admin(): void {
-    if (empty($_SESSION['isAdmin']) || $_SESSION['isAdmin'] !== true) {
-        // Redirect to root index with error
-        header('Location: /index.php?error=unauthorized');
-        exit;
-    }
-}
-
-// Function to check for unauthorized error and add modal HTML and JavaScript
-function checkForUnauthorizedError() {
-    if (isset($_GET['error']) && $_GET['error'] === 'unauthorized') {
-        echo <<<HTML
-        <!-- Modal HTML structure -->
-        <div id="unauthorized-modal" class="modal" style="display:block; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; overflow:auto; background-color:rgba(0,0,0,0.4);">
-            <div style="background-color:#13171f; margin:15% auto; padding:20px; border:1px solid #888; width:80%; max-width:500px; border-radius:8px; box-shadow:0 4px 8px rgba(0,0,0,0.2);">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                    <h3 style="margin:0;">Access Denied</h3>
-                    <span id="close-modal" style="cursor:pointer; font-size:24px; font-weight:bold;">&times;</span>
-                </div>
-                <hr style="margin:0 0 15px 0; border:0; border-top:1px solid #eee;">
-                <p>You don't have permission to access this resource.</p>
-                <div style="text-align:right; margin-top:20px;">
-                    <button id="dismiss-modal" class="secondary">Dismiss</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Modal JavaScript -->
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                // Get the modal
-                var modal = document.getElementById('unauthorized-modal');
-                
-                // Get the close button element
-                var closeBtn = document.getElementById('close-modal');
-                
-                // Get the dismiss button
-                var dismissBtn = document.getElementById('dismiss-modal');
-                
-                // Function to close the modal
-                function closeModal() {
-                    modal.style.display = "none";
-                    // Remove the error parameter from the URL without refreshing the page
-                    const url = new URL(window.location);
-                    url.searchParams.delete('error');
-                    window.history.replaceState({}, document.title, url);
-                }
-                
-                // When the user clicks on the close button, close the modal
-                closeBtn.onclick = closeModal;
-                
-                // When the user clicks on the dismiss button, close the modal
-                dismissBtn.onclick = closeModal;
-                
-                // When the user clicks anywhere outside of the modal, close it
-                window.onclick = function(event) {
-                    if (event.target == modal) {
-                        closeModal();
-                    }
-                }
-            });
-        </script>
-HTML;
-    }
-}
-checkForUnauthorizedError();
-?>

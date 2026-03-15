@@ -42,26 +42,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $username = $_POST['username'];
         $email = $_POST['email'];
         $isAdmin = isset($_POST['isAdmin']) ? 1 : 0;
-        $new_password = $_POST['password'] ?? '';
 
         // Validate inputs
         if (empty($username)) {
             $error_message = "Username is required.";
         } elseif (!empty($email) && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $error_message = "Invalid email address format.";
-        } elseif (!empty($new_password)) {
-            // Validate new password if provided
-            if (strlen($new_password) < 8) {
-                $error_message = "Password must be at least 8 characters long.";
-            } elseif (!preg_match('/[A-Z]/', $new_password)) {
-                $error_message = "Password must contain at least one uppercase letter.";
-            } elseif (!preg_match('/[a-z]/', $new_password)) {
-                $error_message = "Password must contain at least one lowercase letter.";
-            } elseif (!preg_match('/[0-9]/', $new_password)) {
-                $error_message = "Password must contain at least one number.";
-            } elseif (!preg_match('/[^A-Za-z0-9]/', $new_password)) {
-                $error_message = "Password must contain at least one special character.";
-            }
+        }
         }
         
         if (empty($error_message)) {
@@ -78,17 +65,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     if ($user_data['username'] === $_SESSION['username'] && $isAdmin == 0) {
                         $error_message = "You cannot remove your own admin privileges.";
                     } else {
-                        // Update user
-                        if (!empty($new_password)) {
-                            // Update with new password
-                            $password_hash = password_hash($new_password, PASSWORD_DEFAULT);
-                            $stmt = $db->prepare('UPDATE users SET username = :username, password = :password, email = :email, IsAdmin = :isAdmin WHERE ID = :id');
-                            $stmt->bindParam(':password', $password_hash, PDO::PARAM_STR);
-                        } else {
-                            // Update without changing password
-                            $stmt = $db->prepare('UPDATE users SET username = :username, email = :email, IsAdmin = :isAdmin WHERE ID = :id');
-                        }
-                        
+                        // Update without changing password
+                        $stmt = $db->prepare('UPDATE users SET username = :username, email = :email, IsAdmin = :isAdmin WHERE ID = :id');
+                    
                         $stmt->bindParam(':username', $username, PDO::PARAM_STR);
                         $stmt->bindParam(':email', $email, PDO::PARAM_STR);
                         $stmt->bindParam(':isAdmin', $isAdmin, PDO::PARAM_INT);
@@ -212,19 +191,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($user_data['email'] ?? ''); ?>" placeholder="user@example.com">
                         </label>
                     </div>
-
-                    <label for="password">
-                        New Password
-                        <input type="password" id="password" name="password" placeholder="••••••••" aria-describedby="pw-helper">
-                        <small id="pw-helper">Leave blank to keep the current password.</small>
-                    </label>
-
-                    <fieldset>
-                        <label for="isAdmin">
-                            <input type="checkbox" id="isAdmin" name="isAdmin" role="switch" value="1" <?php echo $user_data['IsAdmin'] ? 'checked' : ''; ?>>
-                            Grant Administrator Privileges
-                        </label>
-                    </fieldset>
 
                     <div class="form-footer">
                         <button type="submit" class="contrast">

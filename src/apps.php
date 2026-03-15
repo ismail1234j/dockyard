@@ -1,4 +1,8 @@
 <?php
+// This serves more as a frontend file
+// Backend logic can be found in apps/action.php
+// We make api calls to action.php via HTMX
+
 require_once 'includes/auth.php';
 
 $isAdmin = isset($_SESSION['isAdmin']) && $_SESSION['isAdmin'] === true;
@@ -149,7 +153,6 @@ $user_id = $_SESSION['user_id'] ?? null;
             <main>
                 <section>
                     <div class="table-header">
-                        <h2 style="font-size: 1.25rem; margin: 0;"><i class="fa fa-cubes"></i> Active Containers</h2>
                         <button class="refresh-table secondary"
                                 hx-get="/apps/action.php?action=table&name=dummy"
                                 hx-target="#container-table-body"
@@ -182,7 +185,6 @@ $user_id = $_SESSION['user_id'] ?? null;
             </main>
 
             <footer>
-                <hr />
             </footer>
         </article>
     </div>

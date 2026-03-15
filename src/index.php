@@ -24,7 +24,7 @@ require_once 'includes/auth.php';
 <section>
 <div class="grid"> 
 <?php if (isset($_SESSION['isAdmin']) && $_SESSION['isAdmin'] === true) : ?>
-<div role="button" tabindex="0" class="secondary" onclick="location.href='apps.php';">Container Manager</div>
+<div role="button" tabindex="0" class="secondary" onclick="location.href='apps.php';">Containers</div>
 <div role="button" tabindex="0" class="secondary" onclick="location.href='users.php';">Users</div>
 <div role="button" tabindex="0" class="secondary" onclick="location.href='settings.php';">Settings</div>
 <?php else: ?>

@@ -20,12 +20,6 @@ function respond_error($msg) {
 $action = $_GET['action'] ?? null;
 $name   = $_GET['name'] ?? null;
 
-$allowedActions = ['start', 'stop', 'logs', 'status', 'table'];
-
-if (!in_array($action, $allowedActions, true) || empty($name)) {
-    respond_error("Invalid action or container name");
-}
-
 if (!preg_match('/^[a-zA-Z0-9_.-]{1,64}$/', $name)) {
     respond_error("Invalid container name format");
 }

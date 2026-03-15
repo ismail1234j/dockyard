@@ -7,6 +7,17 @@ $baseDir = dirname(dirname($vendorDir));
 
 return array(
     'phpseclib3\\' => array($vendorDir . '/phpseclib/phpseclib/phpseclib'),
+    'Psr\\Http\\Message\\' => array($vendorDir . '/psr/http-factory/src', $vendorDir . '/psr/http-message/src'),
+    'Psr\\Http\\Client\\' => array($vendorDir . '/psr/http-client/src'),
     'ParagonIE\\ConstantTime\\' => array($vendorDir . '/paragonie/constant_time_encoding/src'),
     'PHPMailer\\PHPMailer\\' => array($vendorDir . '/phpmailer/phpmailer/src'),
+    'League\\OAuth2\\Client\\' => array($vendorDir . '/league/oauth2-client/src'),
+    'GuzzleHttp\\Psr7\\' => array($vendorDir . '/guzzlehttp/psr7/src'),
+    'GuzzleHttp\\Promise\\' => array($vendorDir . '/guzzlehttp/promises/src'),
+    'GuzzleHttp\\' => array($vendorDir . '/guzzlehttp/guzzle/src'),
+    'Delight\\Http\\' => array($vendorDir . '/delight-im/http/src'),
+    'Delight\\Db\\' => array($vendorDir . '/delight-im/db/src'),
+    'Delight\\Cookie\\' => array($vendorDir . '/delight-im/cookie/src'),
+    'Delight\\Base64\\' => array($vendorDir . '/delight-im/base64/src'),
+    'Delight\\Auth\\' => array($vendorDir . '/delight-im/auth/src'),
 );

@@ -1,10 +1,12 @@
 <?php
 require_once 'includes/auth.php';
-require_once 'includes/functions.php';
 require_once 'includes/db.php';
 $db = get_db();
-require_admin();
-$username = $_SESSION['username'];
+
+$username = $_SESSION['username'] ?? '';
+$isAdmin = isset($_SESSION['isAdmin']) && $_SESSION['isAdmin'] === true;
+$user_id = $_SESSION['user_id'] ?? null;
+
 ?>
 <!DOCTYPE html>
 <html data-theme="light">
@@ -12,110 +14,150 @@ $username = $_SESSION['username'];
     <title>Users</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
     <!-- Pico CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.orange.min.css"/>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.colors.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.colors.min.css" />
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+
     <style>
-        :root {
-            --transition-speed: 0.3s;
+        article {
+            max-width: 1400px;
+            margin: 0 auto;
+            box-shadow: var(--pico-card-sectioning-background-color);
         }
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 44px;
-            height: 22px;
-            vertical-align: middle;
-            margin: 0;
+        
+        .header-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--pico-spacing);
         }
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
+
+        .status-running { color: #388e3c; font-weight: bold; }
+        .status-exited, .status-stopped { color: #d32f2f; font-weight: bold; }
+        .status-created, .status-unknown { color: #f57c00; font-weight: bold; }
+        
+        .action-buttons { 
+            display: flex; 
+            gap: 8px; 
+            justify-content: flex-end;
         }
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            inset: 0;
-            background-color: var(--pico-muted-border-color);
-            transition: var(--transition-speed);
-            border-radius: 34px;
-        }
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 16px;
-            width: 16px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: var(--transition-speed);
-            border-radius: 50%;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-        }
-        input:checked + .slider {
-            background-color: var(--pico-primary-background);
-        }
-        input:checked + .slider:before {
-            transform: translateX(22px);
-        }
-        table td {
-            vertical-align: middle;
-        }
-        .action-links a, .action-links i {
+
+        .action-button { 
+            cursor: pointer; 
+            padding: 0.4rem 0.8rem;
+            border-radius: var(--pico-border-radius);
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 32px;
-            height: 32px;
-            border-radius: 4px;
-            transition: background 0.2s;
-            text-decoration: none;
+            font-size: 0.85rem;
+            border: none;
+            transition: opacity 0.2s ease;
         }
-        .action-links a:hover {
-            background: var(--pico-secondary-hover-background);
+
+        .action-button:hover { opacity: 0.85; }
+        .action-button i { margin-right: 5px; }
+
+        .action-start { background-color: #50C878; color: white; }
+        .action-stop { background-color: #FF6B6B; color: white; }
+        .action-logs { background-color: #5DADE2; color: white; }
+
+        /* Modal Overrides for Pico v2 */
+        .view-logs-modal { 
+            display: none; 
+            position: fixed; 
+            z-index: 1000; 
+            left: 0; 
+            top: 0; 
+            width: 100%; 
+            height: 100%; 
+            background-color: rgba(0,0,0,0.75); 
+            backdrop-filter: blur(4px);
         }
-        .text-danger { color: #d93526 !important; }
-        .text-success { color: #388e3c !important; }
-        header hgroup {
-            margin-bottom: var(--pico-spacing);
+
+        .modal-content { 
+            background-color: #13171f; 
+            margin: 2% auto; 
+            padding: 24px; 
+            width: 95%; 
+            max-width: 1000px; 
+            max-height: 90vh; 
+            overflow-y: auto; 
+            border-radius: 12px;
+            border: 1px solid #30363d;
         }
-        .header-actions {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 10px;
+
+        .container-logs { 
+            background-color: #0d1117; 
+            padding: 20px; 
+            border-radius: 8px; 
+            font-family: 'Fira Code', 'Courier New', monospace; 
+            white-space: pre-wrap; 
+            max-height: 60vh; 
+            overflow-y: auto; 
+            color: #d1d5db; 
+            font-size: 0.9rem;
+            line-height: 1.5;
+            border: 1px solid #30363d;
+        }
+
+        .close-button { 
+            color: #9ca3af; 
+            float: right; 
+            font-size: 1.5rem; 
+            font-weight: bold; 
+            cursor: pointer; 
+            line-height: 1;
+        }
+        
+        .close-button:hover { color: white; }
+
+        .table-header { 
+            display: flex; 
+            justify-content: space-between;
+            align-items: center; 
+            margin-bottom: 1.5rem; 
+        }
+
+        .refresh-table {
+            width: auto;
+            margin: 0;
+            padding: 0.5rem 1rem;
+        }
+
+        footer p {
+            font-size: 0.8rem;
+            color: var(--pico-muted-color);
+            margin: 0;
         }
     </style>
 </head>
 <body>
-    <div class="container" style="padding-top: 2rem;">
-        <header>
-            <hgroup>
-                <h1>User Management</h1>
-            </hgroup>
-            <nav class="header-actions">
-                <button class="secondary outline" onclick="location.href='index.php';">
-                    <i class="fa fa-arrow-left"></i> Back
-                </button>
-                <button class="contrast" onclick="location.href='users/new.php';">
-                    <i class="fa fa-plus"></i> Create User
-                </button>
-                <button class="outline" onclick="location.href='users/change_password.php';">
-                    <i class="fa fa-key"></i> My Password
-                </button>
-            </nav>
-        </header>
-        <hr />
-        <main>
-            <figure>
-                <table role="grid">
+    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js"></script>
+    <div class="container" style="padding-top: 4rem; padding-bottom: 4rem;">
+        <article>
+            <header>
+                <div class="header-nav">
+                    <hgroup style="margin: 0;">
+                        <h1>Users</h1>
+                    </hgroup>
+                    <button class="secondary outline" onclick="location.href='index.php';" style="width: auto;">
+                        <i class="fa fa-arrow-left"></i> Back
+                    </button>
+                </div>
+            </header>
+
+            <main>
+                <section>                    
+                    <div id="container-table-container" class="overflow-auto">
+<table role="grid">
                     <thead>
                         <tr>
                             <th scope="col">Username</th>
                             <th scope="col">Email</th>
                             <th scope="col">Role</th>
-                            <th scope="col">Force Reset</th>
                             <th scope="col">Actions</th>
                         </tr>
                     </thead>
@@ -143,18 +185,6 @@ $username = $_SESSION['username'];
                             echo 'User';
                         }
                         echo '</td>';
-                        // Force Reset
-                        $forceReset = isset($row['force_password_reset']) && $row['force_password_reset'] ? true : false;
-                        echo '<td>';
-                        if ($row['username'] !== $username) {
-                            echo '<label class="switch" title="Toggle force password reset">';
-                            echo '<input type="checkbox" ' . ($forceReset ? 'checked' : '') . ' onchange="toggleForceReset(' . $row['ID'] . ', this.checked)">';
-                            echo '<span class="slider"></span>';
-                            echo '</label>';
-                        } else {
-                            echo '-';
-                        }
-                        echo '</td>';
                         // Actions
                         echo '<td class="action-links">';
                         if ($row['username'] !== $username) {
@@ -162,7 +192,7 @@ $username = $_SESSION['username'];
                             echo '<a href="users/manage_permissions.php?id=' . htmlspecialchars($row['ID']) . '" title="Docker Permissions"><i class="fa fa-plug"></i></a>';
                             echo '<i class="fa fa-trash text-danger" style="cursor: pointer;" onclick="deleteUser(\'' . htmlspecialchars($row['username'], ENT_QUOTES) . '\')" title="Delete User"></i>';
                         } else {
-                            echo '<a href="users/change_password.php" title="Change Password"><i class="fa fa-key"></i></a>';
+                            echo '<span style="color: var(--pico-muted-color); font-style: italic;">(You)</span>';
                         }
                         echo '</td>';
                         echo '</tr>';
@@ -170,63 +200,18 @@ $username = $_SESSION['username'];
                     ?>
                     </tbody>
                 </table>
-            </figure>
-        </main>
-        <!-- Hidden CSRF -->
-        <input type="hidden" id="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
+                    </div>
+                </section>
+            </main>
+
+            <footer>
+            </footer>
+        </article>
     </div>
+    
     <script>
-        function deleteUser(username) {
-            if (!confirm(`Permanently delete user "${username}"?`)) return;
-            const csrfToken = document.getElementById('csrf_token').value;
-            fetch('delete_user.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: 'username=' + encodeURIComponent(username) + 
-                      '&csrf_token=' + encodeURIComponent(csrfToken),
-            })
-            .then(response => {
-                if (!response.ok) {
-                    return response.text().then(text => { throw new Error(text || 'Error deleting user') });
-                }
-                return response.text();
-            })
-            .then(data => {
-                alert('User deleted successfully');
-                location.reload();
-            })
-            .catch(error => {
-                alert('Error: ' + error.message);
-            });
-        }
-        function toggleForceReset(userId, enabled) {
-            const csrfToken = document.getElementById('csrf_token').value;
-            fetch('users/toggle_force_reset.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: 'user_id=' + encodeURIComponent(userId) + 
-                      '&enabled=' + encodeURIComponent(enabled ? '1' : '0') +
-                      '&csrf_token=' + encodeURIComponent(csrfToken),
-            })
-            .then(response => {
-                if (!response.ok) {
-                    return response.text().then(text => { throw new Error(text || 'Error toggling force reset') });
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success) {
-                    alert(data.message);
-                } else {
-                    alert('Error: ' + data.message);
-                    location.reload();
-                }
-            })
-            .catch(error => {
-                alert('Error: ' + error.message);
-                location.reload();
-            });
-        }
+        // Use the CSRF token from PHP
+        window.csrfToken = <?php echo json_encode($_SESSION['csrf_token'] ?? ''); ?>;
     </script>
 </body>
 </html>
